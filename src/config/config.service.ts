@@ -20,8 +20,6 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
         await this.load();
       }, this.ttl);
     }
-
-    this.packageInfo = JSON.parse(await fs.readFile('package.json', 'utf-8'));
   }
 
   async onModuleDestroy() {
@@ -30,7 +28,7 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async load(): Promise<void> {
+  public async load(): Promise<void> {
     this.config = convict(schema);
 
     const key = this.config.get('env');
@@ -39,6 +37,8 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
     }
 
     await this.config.validate({ allowed: 'warn' });
+
+    this.packageInfo = JSON.parse(await fs.readFile('package.json', 'utf-8'));
   }
 
   get(key?: string): any {

@@ -2,11 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from './config/config.service';
 
-async function swagger(app: INestApplication) {
+async function swagger(app: INestApplication, config: ConfigService) {
+  const { description, version } = config.getPackageInfo();
+
   const options = new DocumentBuilder()
-    .setTitle('Ownable Bridge')
-    .setDescription('Swap Ownable for NFT and visa-versa')
+    .setTitle('LTO Ownable Bridge')
+    .setDescription(description)
+    .setVersion(version !== '0.0.0' ? version : config.get('env'))
     .addBearerAuth()
     .build();
 
@@ -17,7 +21,10 @@ async function swagger(app: INestApplication) {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  await swagger(app);
+  const config = await app.get<ConfigService>(ConfigService);
+  await config.load();
+
+  await swagger(app, config);
   await app.listen(3000);
 }
 
