@@ -1,10 +1,12 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import convict from 'convict';
+import * as convict from 'convict';
+import * as fs from 'fs/promises';
 import { config, schema } from './data';
 
 @Injectable()
 export class ConfigService implements OnModuleInit, OnModuleDestroy {
   private config: convict.Config<any>;
+  private packageInfo: { [_: string]: any };
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
   private reloadInterval: NodeJS.Timer;
 
@@ -18,6 +20,8 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
         await this.load();
       }, this.ttl);
     }
+
+    this.packageInfo = JSON.parse(await fs.readFile('package.json', 'utf-8'));
   }
 
   async onModuleDestroy() {
@@ -43,5 +47,9 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
 
   has(key: string): boolean {
     return this.config.has(key);
+  }
+
+  getPackageInfo(): { [_: string]: any } {
+    return this.packageInfo;
   }
 }

@@ -10,9 +10,10 @@ describe('ConfigService', () => {
     }).compile();
 
     service = module.get<ConfigService>(ConfigService);
+    await service.onModuleInit();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('should give the correct environment', () => {
+    expect(service.get('env')).toBe('test');
   });
 });

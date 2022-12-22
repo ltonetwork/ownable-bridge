@@ -13,7 +13,7 @@ export default {
   lto: {
     node: {
       default: 'https://testnet.lto.network',
-      env: 'LTO_NODE_URL_TEST',
+      env: 'LTO_NODE',
     },
   },
   eth: {
@@ -36,7 +36,7 @@ export default {
   },
   ssl: {
     enabled: {
-      default: true,
+      default: false,
       env: 'SSL_ENABLED',
     },
   },
