@@ -40,4 +40,14 @@ export default {
       env: 'SSL_ENABLED',
     },
   },
+  packages: {
+    path: {
+      default: 'storage/packages',
+      env: 'PACKAGES_PATH',
+    },
+    uploads: {
+      default: 'storage/uploads',
+      env: 'PACKAGES_UPLOAD_PATH',
+    },
+  },
 };

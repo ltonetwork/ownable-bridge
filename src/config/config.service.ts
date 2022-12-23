@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import * as convict from 'convict';
+import convict from 'convict';
 import * as fs from 'fs/promises';
 import { config, schema } from './data';
 

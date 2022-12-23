@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from './config/config.service';
+import bodyParser from 'body-parser';
 
 async function swagger(app: INestApplication, config: ConfigService) {
   const { description, version } = config.getPackageInfo();
@@ -19,10 +20,20 @@ async function swagger(app: INestApplication, config: ConfigService) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
 
   const config = await app.get<ConfigService>(ConfigService);
   await config.load();
+
+  app.use(
+    bodyParser.json({}),
+    bodyParser.raw({
+      type: ['application/octet-stream', 'application/zip'],
+      limit: '100MB',
+    }),
+  );
 
   await swagger(app, config);
   await app.listen(3000);
