@@ -15,6 +15,13 @@ export default {
       default: 'https://testnet.lto.network',
       env: 'LTO_NODE',
     },
+    networkId: {
+      default: 'T',
+      env: 'LTO_NETWORK_ID',
+    },
+    seed: {
+      env: 'LTO_WALLET_SEED',
+    },
   },
   eth: {
     seed: {

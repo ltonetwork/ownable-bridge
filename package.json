@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@ltonetwork/lto": "^0.10.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
@@ -28,6 +29,7 @@
     "@tweedegolf/storage-abstraction": "^1.4.3",
     "bs58": "^5.0.0",
     "convict": "^6.2.3",
+    "ethers": "^5.7.2",
     "ipfs-core": "^0.17.0",
     "jszip": "^3.10.1",
     "reflect-metadata": "^0.1.13",

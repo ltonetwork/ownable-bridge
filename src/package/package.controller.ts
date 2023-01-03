@@ -1,6 +1,6 @@
-import { Controller, Post, Req } from '@nestjs/common';
+import { Controller, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { PackageService } from './package.service';
 
 @Controller('packages')
@@ -9,9 +9,14 @@ export class PackageController {
   constructor(private readonly packageService: PackageService) {}
 
   @Post('/')
-  async root(@Req() req: Request): Promise<{ cid: string }> {
+  async root(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<{ cid: string }> {
     const buffer = req.body;
-    if (!buffer) throw new Error('Failed to read data from HTTP request');
+    if (!buffer) {
+      res.status(400).send('Failed to read data from HTTP request');
+    }
 
     const cid = await this.packageService.store(buffer);
     return { cid };

@@ -70,4 +70,8 @@ export class PackageService implements OnModuleInit {
 
     return await this.storeByCid(dir);
   }
+
+  async exists(cid: string): Promise<boolean> {
+    return await fileExists(`${this.path}/${cid}`);
+  }
 }
