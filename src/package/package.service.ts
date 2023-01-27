@@ -74,4 +74,8 @@ export class PackageService implements OnModuleInit {
   async exists(cid: string): Promise<boolean> {
     return await fileExists(`${this.path}/${cid}`);
   }
+
+  file(cid: string, filename: string): string {
+    return `${this.path}/${cid}/${filename}`;
+  }
 }

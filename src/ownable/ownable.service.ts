@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PackageService } from '../package/package.service';
 import { Account, EventChain, LTO } from '@ltonetwork/lto';
 import { ConfigService } from '../config/config.service';
+import { CosmWasmService } from '../cosmwasm/cosmwasm.service';
 
 @Injectable()
 export class OwnableService implements OnModuleInit {
@@ -10,6 +11,7 @@ export class OwnableService implements OnModuleInit {
   constructor(
     private packages: PackageService,
     private config: ConfigService,
+    private cosmWasm: CosmWasmService,
     private lto: LTO,
   ) {}
 
@@ -27,15 +29,13 @@ export class OwnableService implements OnModuleInit {
     }
 
     // Load ownable from WASM. Some test data for now.
-    const ownable = {
-      isBridged: (address: string) => true,
-      owner: '3Msoe9ZvqXqKDtsXzwmfama2KHxPMDwosTF',
-    };
+    const contract = await this.cosmWasm.load(
+      this.packages.file(packageId, 'ownable.js'),
+      this.packages.file(packageId, 'ownable_bg.wasm'),
+    );
 
-    // Apply event chain to ownable
-
-    if (!ownable.isBridged(this.account.address)) {
-      throw Error('Ownable not bridged');
+    if (!contract.state.locked) {
+      throw Error('Ownable not lock');
     }
   }
 }

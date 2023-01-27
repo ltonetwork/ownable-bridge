@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { OwnableService } from './ownable.service';
 import { OwnableController } from './ownable.controller';
 import { LtoModule } from '../common/lto/lto.module';
+import { CosmWasmModule } from '../cosmwasm/cosmwasm.module';
 
 @Module({
-  imports: [LtoModule],
+  imports: [LtoModule, CosmWasmModule],
   providers: [OwnableService],
   controllers: [OwnableController],
 })
