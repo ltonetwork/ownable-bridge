@@ -34,7 +34,11 @@ export class OwnableService implements OnModuleInit {
       this.packages.file(packageId, 'ownable_bg.wasm'),
     );
 
-    if (!contract.state.locked) {
+    const state = await contract.query({
+      get_ownable_config: {},
+    });
+
+    if (!state.isLocked) {
       throw Error('Ownable not lock');
     }
   }

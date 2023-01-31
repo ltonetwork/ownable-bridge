@@ -21,12 +21,14 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@babel/core": "^7.20.12",
     "@ltonetwork/lto": "^0.10.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.1.4",
     "@tweedegolf/storage-abstraction": "^1.4.3",
+    "babel-plugin-remove-import-export": "^1.1.1",
     "bs58": "^5.0.0",
     "convict": "^6.2.3",
     "ethers": "^5.7.2",

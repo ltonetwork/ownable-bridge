@@ -1,11 +1,8 @@
 import * as vm from 'vm';
 
 export default class Contract {
-  public readonly state: { [_: string]: any } = {};
-  private readonly idb = {};
-
   constructor(private sandbox: vm.Context) {
-    this.sandbox.idb = this.idb;
+    this.sandbox.idb = [];
   }
 
   private run(call: string, context: { [_: string]: any }): any {
@@ -28,26 +25,36 @@ export default class Contract {
     return result;
   }
 
+  private storeState(json: string) {
+    const mem = JSON.parse(json);
+    this.sandbox.idb = mem['state_dump'];
+  }
+
   async init(buffer: Buffer): Promise<void> {
-    await this.run(
-      'new Promise(resolve => { contract.initSync(buffer); resolve(); })',
-      { buffer },
+    await this.run('init(buffer)', { buffer });
+  }
+
+  async instantiate(msg: any, info: any): Promise<{ [_: string]: any }> {
+    const result: Map<string, any> = await this.run(
+      'instantiate_contract(msg, info)',
+      { msg, info },
     );
+
+    this.storeState(result.get('mem'));
+    return result.get('state');
   }
 
-  async instantiate(msg: any, info: any) {
-    const context = { msg, info };
-    return await this.run('contract.instantiate_contract(msg, info)', context);
-  }
-
-  async execute(msg: any, info: any, id: string) {
-    return await this.run(
-      'contract.execute_contract(msg, info, ownable_id, idb)',
-      { msg, info, ownable_id: id },
+  async execute(msg: any, info: any): Promise<{ [_: string]: any }> {
+    const result: Map<string, any> = await this.run(
+      'execute_contract(msg, info, "", idb)',
+      { msg, info },
     );
+
+    this.storeState(result.get('mem'));
+    return result.get('state');
   }
 
-  async query(msg: any) {
-    return await this.run('contract.query_contract_state(msg, idb)', { msg });
+  async query(msg: any): Promise<{ [_: string]: any }> {
+    return await this.run('query_contract_state(msg, idb)', { msg });
   }
 }
