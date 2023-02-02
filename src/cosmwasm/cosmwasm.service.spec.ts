@@ -24,7 +24,7 @@ describe('CosmWasmService', () => {
 
   it('instantiates the smart contract', async () => {
     const result = await contract.instantiate(
-      { ownable_id: '123', network_id: 'T' },
+      { ownable_id: "88pDRu52FpsU3kKHwdvPV21RMkBqVqNnthjfdCesTHQhLnUpanw49n6b2PzGnEy" },
       { sender: 'some_account', funds: [] },
     );
     assert.equal(result.method, 'instantiate');
@@ -39,7 +39,7 @@ describe('CosmWasmService', () => {
 
   it('executes a message on the smart contract', async () => {
     await contract.instantiate(
-      { ownable_id: '123', network_id: 'T' },
+      { ownable_id: "88pDRu52FpsU3kKHwdvPV21RMkBqVqNnthjfdCesTHQhLnUpanw49n6b2PzGnEy" },
       { sender: 'some_account', funds: [] },
     );
 
@@ -48,10 +48,10 @@ describe('CosmWasmService', () => {
       { sender: 'some_account', funds: [] },
     );
     assert.equal(result.method, 'try_consume');
-    assert.equal(result.new_amount, '58');
+    assert.equal(result.new_amount, 58);
 
     const state = await contract.query({ get_ownable_config: {} });
     assert.equal(state.owner, 'some_account');
-    assert.equal(state.current_amount, '58');
+    assert.equal(state.current_amount, 58);
   });
 });

@@ -27,7 +27,15 @@ export default class Contract {
 
   private storeState(json: string) {
     const mem = JSON.parse(json);
-    this.sandbox.idb = mem['state_dump'];
+    this.sandbox.idb = mem;
+  }
+
+  private parseState(json: string): { [_: string]: any } {
+    const { attributes } = JSON.parse(json) as {
+      attributes: Array<{ key: string; value: any }>;
+    };
+
+    return Object.fromEntries(attributes.map((attr) => [attr.key, attr.value]));
   }
 
   async init(buffer: Buffer): Promise<void> {
@@ -41,7 +49,7 @@ export default class Contract {
     );
 
     this.storeState(result.get('mem'));
-    return result.get('state');
+    return this.parseState(result.get('state'));
   }
 
   async execute(msg: any, info: any): Promise<{ [_: string]: any }> {
@@ -51,10 +59,12 @@ export default class Contract {
     );
 
     this.storeState(result.get('mem'));
-    return result.get('state');
+    return this.parseState(result.get('state'));
   }
 
-  async query(msg: any): Promise<{ [_: string]: any }> {
-    return await this.run('query_contract_state(msg, idb)', { msg });
+  async query(msg: any): Promise<any> {
+    const result = await this.run('query_contract_state(msg, idb)', { msg });
+    const state = JSON.parse(result.get('state'));
+    return JSON.parse(atob(state));
   }
 }
