@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.20.12",
-    "@ltonetwork/lto": "^0.10.1",
+    "@ltonetwork/lto": "^0.10.2",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",

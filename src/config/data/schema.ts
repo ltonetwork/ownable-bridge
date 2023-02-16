@@ -20,6 +20,7 @@ export default {
       env: 'LTO_NETWORK_ID',
     },
     seed: {
+      default: '',
       env: 'LTO_WALLET_SEED',
     },
   },

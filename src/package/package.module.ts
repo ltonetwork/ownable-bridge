@@ -7,5 +7,6 @@ import { ConfigModule } from '../config/config.module';
   imports: [ConfigModule],
   providers: [PackageService],
   controllers: [PackageController],
+  exports: [PackageService],
 })
 export class PackageModule {}

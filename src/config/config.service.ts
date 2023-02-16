@@ -31,6 +31,7 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
   public async load(): Promise<void> {
     this.config = convict(schema);
 
+    // @ts-ignore
     const key = this.config.get('env');
     if (config[key]) {
       this.config.load(config[key]);
