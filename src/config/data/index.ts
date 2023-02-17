@@ -5,7 +5,7 @@ import development from './development';
 import staging from './development';
 import production from './development';
 
-export const config = {
+export const envs = {
   test,
   development,
   staging,
