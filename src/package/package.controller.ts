@@ -1,5 +1,5 @@
 import { Controller, Post, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { PackageService } from './package.service';
 
@@ -9,6 +9,11 @@ export class PackageController {
   constructor(private readonly packageService: PackageService) {}
 
   @Post('/')
+  @ApiConsumes('application/octet-stream')
+  @ApiBody({
+    description: 'Zipped Ownable package',
+    required: true,
+  })
   async root(
     @Req() req: Request,
     @Res() res: Response,

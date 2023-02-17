@@ -48,6 +48,12 @@ export default {
       env: 'SSL_ENABLED',
     },
   },
+  ipfs: {
+    start: {
+      default: true,
+      env: 'IPFS_START',
+    },
+  },
   packages: {
     path: {
       default: 'storage/packages',

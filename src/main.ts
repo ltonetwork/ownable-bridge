@@ -35,6 +35,8 @@ async function bootstrap() {
     }),
   );
 
+  app.enableShutdownHooks();
+
   await swagger(app, config);
   await app.listen(3000);
 }

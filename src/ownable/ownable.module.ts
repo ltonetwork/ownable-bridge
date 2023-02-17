@@ -4,9 +4,10 @@ import { OwnableController } from './ownable.controller';
 import { LtoModule } from '../common/lto/lto.module';
 import { CosmWasmModule } from '../cosmwasm/cosmwasm.module';
 import { PackageModule } from '../package/package.module';
+import { ConfigModule } from '../config/config.module';
 
 @Module({
-  imports: [LtoModule, CosmWasmModule, PackageModule],
+  imports: [ConfigModule, LtoModule, CosmWasmModule, PackageModule],
   providers: [OwnableService],
   controllers: [OwnableController],
 })

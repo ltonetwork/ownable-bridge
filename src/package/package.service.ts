@@ -1,24 +1,24 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../config/config.service';
 import JSZip from 'jszip';
 import * as fs from 'fs/promises';
 import multihash from '../utils/multihash';
 import fileExists from '../utils/fileExists';
+import path from 'path';
 
 @Injectable()
 export class PackageService implements OnModuleInit {
   private uploads: string;
   private path: string;
-  private ipfs;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    @Inject('IPFS') private readonly ipfs: IPFS,
+  ) {}
 
   async onModuleInit() {
     this.uploads = this.config.get('packages.uploads');
     this.path = this.config.get('packages.path');
-
-    const IPFS = await import('ipfs-core');
-    this.ipfs = await IPFS.create({ start: false });
   }
 
   private async unzip(data: Buffer, dest: string): Promise<void> {
@@ -53,7 +53,8 @@ export class PackageService implements OnModuleInit {
       await fs.rename(dir, packageDir);
     }
 
-    await fs.symlink(packageDir, dir);
+    const target = path.relative(path.resolve(dir), path.resolve(packageDir));
+    await fs.symlink(target, dir);
 
     return cid;
   }
