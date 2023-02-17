@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigModule } from '../config/config.module';
 import { ltoProviders } from './lto.providers';
 
 @Module({

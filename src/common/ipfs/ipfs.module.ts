@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigModule } from '../config/config.module';
 import { ipfsProviders } from './ipfs.providers';
 import { IpfsService } from './ipfs.service';
 

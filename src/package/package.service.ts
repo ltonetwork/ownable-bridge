@@ -1,5 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import JSZip from 'jszip';
 import * as fs from 'fs/promises';
 import multihash from '../utils/multihash';
@@ -13,18 +13,19 @@ export class PackageService implements OnModuleInit {
 
   constructor(
     private readonly config: ConfigService,
+    private readonly zip: JSZip,
     @Inject('IPFS') private readonly ipfs: IPFS,
   ) {}
 
   async onModuleInit() {
     this.uploads = this.config.get('packages.uploads');
     this.path = this.config.get('packages.path');
+
+    await fs.mkdir(this.path, { recursive: true });
   }
 
-  private async unzip(data: Buffer, dest: string): Promise<void> {
-    const zip = new JSZip();
-    const archive = await zip.loadAsync(data, { createFolders: true });
-
+  private async unzip(data: Uint8Array, dest: string): Promise<void> {
+    const archive = await this.zip.loadAsync(data, { createFolders: true });
     await fs.mkdir(dest, { recursive: true });
 
     await Promise.all(
@@ -37,7 +38,6 @@ export class PackageService implements OnModuleInit {
 
   private async getCid(dir: string): Promise<string> {
     const { cid } = await this.ipfs.add(dir, { onlyHash: true });
-
     return cid.toString();
   }
 
@@ -49,17 +49,16 @@ export class PackageService implements OnModuleInit {
       // package already uploaded, with different zip file
       await fs.rm(dir, { recursive: true, force: true });
     } else {
-      await fs.mkdir(packageDir, { recursive: true });
       await fs.rename(dir, packageDir);
     }
 
-    const target = path.relative(path.resolve(dir), path.resolve(packageDir));
+    const target = path.relative(path.resolve(path.dirname(dir)), path.resolve(packageDir));
     await fs.symlink(target, dir);
 
     return cid;
   }
 
-  async store(data: Buffer): Promise<string> {
+  async store(data: Uint8Array): Promise<string> {
     const dir = this.uploads + '/' + multihash(data);
 
     if (await fileExists(dir)) {

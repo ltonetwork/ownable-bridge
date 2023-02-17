@@ -20,6 +20,6 @@ export class AppController {
     description: string;
     env: string;
   } {
-    return this.appService.getInfo();
+    return this.appService.info;
   }
 }

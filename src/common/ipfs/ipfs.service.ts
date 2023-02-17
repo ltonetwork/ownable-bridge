@@ -4,7 +4,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { ConfigService } from '../../config/config.service';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class IpfsService implements OnModuleInit, OnModuleDestroy {

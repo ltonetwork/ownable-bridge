@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ConfigService } from './config/config.service';
+import { ConfigService } from './common/config/config.service';
 import bodyParser from 'body-parser';
 
 async function swagger(app: INestApplication, config: ConfigService) {

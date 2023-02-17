@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import convict from 'convict';
-import * as fs from 'fs/promises';
-import { envs, schema } from './data';
+import { configurations, schema } from '../../config';
 
 type SchemaOf<T extends convict.Schema<any>> = T extends convict.Schema<infer R> ? R : any;
 type Schema = SchemaOf<typeof schema>;
@@ -11,7 +10,6 @@ type PathValue<K extends Path> = K extends null | undefined ? Schema : K extends
 @Injectable()
 export class ConfigService implements OnModuleInit, OnModuleDestroy {
   private config: convict.Config<Schema>;
-  private packageInfo: { [_: string]: any };
   private readonly ttl: number = 300000; // 5 minutes in milliseconds
   private reloadInterval: NodeJS.Timer;
 
@@ -37,14 +35,12 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
     const config = convict(schema);
     const key = config.get('env');
 
-    if (envs[key]) {
-      config.load(envs[key]);
+    if (key in configurations) {
+      config.load(configurations[key]);
     }
 
     await config.validate({ allowed: 'warn' });
     this.config = config;
-
-    this.packageInfo = JSON.parse(await fs.readFile('package.json', 'utf-8'));
   }
 
   get<K extends Path>(key: K): PathValue<K> {
@@ -53,9 +49,5 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
 
   has(key: Path): boolean {
     return this.config.has(key);
-  }
-
-  getPackageInfo(): { [_: string]: any } {
-    return this.packageInfo;
   }
 }

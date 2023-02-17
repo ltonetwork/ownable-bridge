@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PackageService } from '../package/package.service';
 import { Account, EventChain, LTO } from '@ltonetwork/lto';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '../common/config/config.service';
 import { CosmWasmService } from '../cosmwasm/cosmwasm.service';
 
 @Injectable()
