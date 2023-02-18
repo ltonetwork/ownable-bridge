@@ -27,10 +27,26 @@ export default {
       default: '',
       env: 'ETH_SEED',
     },
-    infura: {
-      key: {
+    providers: {
+      etherscan: {
+        default: '',
+        env: 'ETHERSCAN_KEY',
+      },
+      infura: {
         default: '',
         env: 'INFURA_KEY',
+      },
+      alchemy: {
+        default: '',
+        env: 'ALCHEMY_KEY',
+      },
+      pocket: {
+        default: '',
+        env: 'POCKET_KEY',
+      },
+      ankr: {
+        default: '',
+        env: 'ANKR_KEY',
       },
     },
     networks: {
@@ -38,7 +54,7 @@ export default {
         {
           id: 5,
           name: 'goerli',
-          provider: 'infura' as 'infura' | 'jsonrpc',
+          provider: 'infura' as 'jsonrpc' | 'etherscan' | 'infura' | 'alchemy' | 'cloudflare' | 'pocket' | 'ankr',
           url: '',
         },
       ],
@@ -51,8 +67,8 @@ export default {
           default: '',
         },
         provider: {
-          format: ['infura', 'jsonrpc'],
-          default: 'infura',
+          format: ['jsonrpc', 'etherscan', 'infura', 'alchemy', 'cloudflare', 'pocket', 'ankr'],
+          default: 'jsonrpc',
         },
         url: {
           default: '',
