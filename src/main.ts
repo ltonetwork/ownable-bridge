@@ -6,7 +6,8 @@ import { ConfigService } from './common/config/config.service';
 import bodyParser from 'body-parser';
 
 async function swagger(app: INestApplication, config: ConfigService) {
-  const { description, version } = config.getPackageInfo();
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { description, version } = require('../package.json');
 
   const options = new DocumentBuilder()
     .setTitle('LTO Ownable Bridge')

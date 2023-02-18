@@ -3,8 +3,8 @@ import { EthersService } from './ethers.service';
 import { ConfigModule } from '../config/config.module';
 
 @Module({
+  imports: [ConfigModule],
   providers: [EthersService],
   exports: [EthersService],
-  imports: [ConfigModule],
 })
 export class EthersModule {}
