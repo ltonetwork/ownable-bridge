@@ -7,6 +7,19 @@ type Schema = SchemaOf<typeof schema>;
 type Path = convict.Path<SchemaOf<typeof schema>>;
 type PathValue<K extends Path> = K extends null | undefined ? Schema : K extends convict.Path<Schema> ? convict.PathValue<Schema, K> : never;
 
+convict.addFormat({
+  name: 'typed-array',
+  validate: (items, schema) => {
+    if (!Array.isArray(items)) {
+      throw new Error('must be of type Array');
+    }
+
+    for (const item of items) {
+      convict(schema.children).load(item).validate();
+    }
+  },
+});
+
 @Injectable()
 export class ConfigService implements OnModuleInit, OnModuleDestroy {
   private config: convict.Config<Schema>;

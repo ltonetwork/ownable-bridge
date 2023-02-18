@@ -1,12 +1,10 @@
 export default {
   env: {
-    doc: 'The application environment.',
     format: ['production', 'staging', 'development', 'test'],
     default: 'development',
     env: 'NODE_ENV',
   },
   port: {
-    doc: 'The port the application runs on',
     default: 80,
     env: 'PORT',
   },
@@ -29,11 +27,37 @@ export default {
       default: '',
       env: 'ETH_SEED',
     },
-  },
-  infura: {
-    key: {
-      default: '',
-      env: 'INFURA_KEY',
+    infura: {
+      key: {
+        default: '',
+        env: 'INFURA_KEY',
+      },
+    },
+    networks: {
+      default: [
+        {
+          id: 5,
+          name: 'goerli',
+          provider: 'infura' as 'infura' | 'jsonrpc',
+          url: '',
+        },
+      ],
+      format: 'typed-array',
+      children: {
+        id: {
+          default: 0,
+        },
+        name: {
+          default: '',
+        },
+        provider: {
+          format: ['infura', 'jsonrpc'],
+          default: 'infura',
+        },
+        url: {
+          default: '',
+        },
+      },
     },
   },
   log: {

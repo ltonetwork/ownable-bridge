@@ -35,7 +35,7 @@ export class OwnableService implements OnModuleInit {
     );
 
     const state = await contract.query({
-      get_ownable_config: {},
+      ownable: {},
     });
 
     if (!state.isLocked) {

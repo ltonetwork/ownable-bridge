@@ -1,5 +1,4 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import fs from 'fs/promises';
 import * as process from 'process';
 
 @Injectable()
@@ -11,8 +10,9 @@ export class AppService implements OnModuleInit {
     env: string;
   };
 
-  async onModuleInit(): Promise<void> {
-    const packageInfo = JSON.parse(await fs.readFile('package.json', 'utf-8'));
+  onModuleInit(): void {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const packageInfo = require('../package.json');
 
     this.info = {
       name: packageInfo.name,
