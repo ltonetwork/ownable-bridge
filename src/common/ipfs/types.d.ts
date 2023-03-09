@@ -1,1 +1,1 @@
-type IPFS = PromiseOf<ReturnType<typeof import('ipfs-core').create>>;
+type IPFS = Awaited<ReturnType<typeof import('ipfs-core').create>>;

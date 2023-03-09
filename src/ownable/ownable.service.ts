@@ -34,12 +34,23 @@ export class OwnableService implements OnModuleInit {
       this.packages.file(packageId, 'ownable_bg.wasm'),
     );
 
+    // Apply events to contract
+
     const state = await contract.query({
-      ownable: {},
+      get_ownable_config: {}, // to be renamed to `get_ownership`
     });
 
     if (!state.isLocked) {
       throw Error('Ownable not lock');
     }
+
+    // Save event chain to DB
+
+    // Generate proof to unlock NFT
+    //   state.nft = {
+    //     network: "eip115:5",
+    //     address: "....",
+    //     tokenId: "..."
+    //   }
   }
 }
