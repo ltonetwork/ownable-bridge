@@ -30,7 +30,7 @@ export class PackageService implements OnModuleInit {
 
     await Promise.all(
       Object.entries(archive.files).map(async ([filename, file]) => {
-        if (filename === 'event_chain.json') return;
+        if (filename === 'chain.json') return;
         const content = await file.async('nodebuffer');
         return fs.writeFile(`${dest}/${filename}`, content);
       }),
