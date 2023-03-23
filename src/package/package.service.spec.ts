@@ -4,7 +4,7 @@ import { PackageService } from './package.service';
 import { ConfigModule } from '../common/config/config.module';
 import * as fsModule from 'fs/promises';
 import JSZip from 'jszip';
-import * as multihash from '../utils/multihash';
+import { Binary } from '@ltonetwork/lto';
 
 const fs = jest.mocked(fsModule);
 jest.mock('fs/promises');
@@ -13,7 +13,7 @@ describe('PackageService', () => {
   let service: PackageService;
   const ipfs = {
     add: jest.fn((path: string) => ({
-      cid: { toString: () => multihash.sha256('[IPFS]' + path) },
+      cid: { toString: () => new Binary('[IPFS]' + path).hash().base58 },
     })),
   };
   const zip = {
@@ -68,8 +68,8 @@ describe('PackageService', () => {
 
   describe('store()', () => {
     const buffer = new Uint8Array([1, 2, 3]);
-    const uploadPath = 'storage/uploads/' + multihash.sha256(buffer);
-    const cid = multihash.sha256('[IPFS]' + uploadPath);
+    const uploadPath = 'storage/uploads/' + new Binary(buffer).hash().hex;
+    const cid = new Binary('[IPFS]' + uploadPath).hash().base58;
 
     beforeEach(() => {
       fs.access.mockReset();

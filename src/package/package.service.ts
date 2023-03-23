@@ -2,9 +2,9 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../common/config/config.service';
 import JSZip from 'jszip';
 import * as fs from 'fs/promises';
-import * as multihash from '../utils/multihash';
 import fileExists from '../utils/fileExists';
 import path from 'path';
+import { Binary } from '@ltonetwork/lto';
 
 @Injectable()
 export class PackageService implements OnModuleInit {
@@ -38,8 +38,8 @@ export class PackageService implements OnModuleInit {
   }
 
   private async getCid(path: string): Promise<string> {
-    const { cid } = await this.ipfs.add(path, { onlyHash: true, cidVersion: 1 });
-    return cid.toString();
+    const result = await this.ipfs.add(path, { onlyHash: true, cidVersion: 1 });
+    return result.cid.toString();
   }
 
   private async storeByCid(dir: string): Promise<string> {
@@ -60,7 +60,7 @@ export class PackageService implements OnModuleInit {
   }
 
   async store(data: Uint8Array): Promise<string> {
-    const dir = this.uploads + '/' + multihash.sha256(data);
+    const dir = this.uploads + '/' + new Binary(data).hash().hex;
 
     if (await fileExists(dir)) {
       const link = await fs.readlink(dir);
