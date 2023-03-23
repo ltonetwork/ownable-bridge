@@ -2,5 +2,6 @@
   "singleQuote": true,
   "trailingComma": "all",
   "singleAttributePerLine": false,
-  "printWidth": 120
+  "printWidth": 120,
+  "array-bracket-newline": "consistent"
 }

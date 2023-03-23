@@ -30,7 +30,7 @@ export class OwnableService implements OnModuleInit {
 
     // Load ownable from WASM. Some test data for now.
     const contract = await this.cosmWasm.load(
-      this.packages.file(packageId, 'bindgen.js'),
+      this.packages.file(packageId, 'ownable.js'),
       this.packages.file(packageId, 'ownable_bg.wasm'),
     );
 

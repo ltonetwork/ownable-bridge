@@ -14,16 +14,14 @@ export class PackageController {
     description: 'Zipped Ownable package',
     required: true,
   })
-  async root(
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<{ cid: string }> {
+  async root(@Req() req: Request, @Res() res: Response): Promise<Response> {
     const buffer = req.body;
     if (!buffer) {
-      res.status(400).send('Failed to read data from HTTP request');
+      return res.status(400).send('Failed to read data from HTTP request');
     }
 
     const cid = await this.packageService.store(buffer);
-    return { cid };
+
+    return res.status(201).json({ cid });
   }
 }

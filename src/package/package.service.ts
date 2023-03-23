@@ -2,7 +2,7 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '../common/config/config.service';
 import JSZip from 'jszip';
 import * as fs from 'fs/promises';
-import multihash from '../utils/multihash';
+import * as multihash from '../utils/multihash';
 import fileExists from '../utils/fileExists';
 import path from 'path';
 
@@ -30,14 +30,15 @@ export class PackageService implements OnModuleInit {
 
     await Promise.all(
       Object.entries(archive.files).map(async ([filename, file]) => {
+        if (filename === 'event_chain.json') return;
         const content = await file.async('nodebuffer');
         return fs.writeFile(`${dest}/${filename}`, content);
       }),
     );
   }
 
-  private async getCid(dir: string): Promise<string> {
-    const { cid } = await this.ipfs.add(dir, { onlyHash: true });
+  private async getCid(path: string): Promise<string> {
+    const { cid } = await this.ipfs.add(path, { onlyHash: true, cidVersion: 1 });
     return cid.toString();
   }
 
@@ -59,7 +60,7 @@ export class PackageService implements OnModuleInit {
   }
 
   async store(data: Uint8Array): Promise<string> {
-    const dir = this.uploads + '/' + multihash(data);
+    const dir = this.uploads + '/' + multihash.sha256(data);
 
     if (await fileExists(dir)) {
       const link = await fs.readlink(dir);
