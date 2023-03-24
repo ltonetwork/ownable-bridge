@@ -3,6 +3,7 @@ import { PackageService } from '../package/package.service';
 import { Account, EventChain, LTO } from '@ltonetwork/lto';
 import { ConfigService } from '../common/config/config.service';
 import { CosmWasmService } from '../cosmwasm/cosmwasm.service';
+import Contract from '../cosmwasm/contract';
 
 @Injectable()
 export class OwnableService implements OnModuleInit {
@@ -21,26 +22,49 @@ export class OwnableService implements OnModuleInit {
     });
   }
 
-  async accept(chain: EventChain): Promise<void> {
-    const packageId: string = chain.events[0].parsedData.package;
+  private async apply(contract: Contract, chain: EventChain): Promise<void> {
+    for (const event of chain.events) {
+      const info: { sender: string; funds: [] } = {
+        sender: event.signKey!.publicKey.base58,
+        funds: [],
+      };
+      const { '@context': context, ...msg } = event.parsedData;
 
-    if (!(await this.packages.exists(packageId))) {
+      switch (context) {
+        case 'instantiate_msg.json':
+          await contract.instantiate(msg, info);
+          break;
+        case 'execute_msg.json':
+          await contract.execute(msg, info);
+          break;
+        case 'external_event_msg.json':
+          await contract.externalEvent(msg, info);
+          break;
+        default:
+          throw new Error('Unknown event type');
+      }
+    }
+  }
+
+  async accept(chain: EventChain): Promise<void> {
+    const packageCid: string = chain.events[0].parsedData.package;
+
+    if (!(await this.packages.exists(packageCid))) {
       throw new Error('Unknown ownable package');
     }
 
-    // Load ownable from WASM. Some test data for now.
     const contract = await this.cosmWasm.load(
-      this.packages.file(packageId, 'ownable.js'),
-      this.packages.file(packageId, 'ownable_bg.wasm'),
+      this.packages.file(packageCid, 'ownable.js'),
+      this.packages.file(packageCid, 'ownable_bg.wasm'),
     );
 
-    // Apply events to contract
+    await this.apply(contract, chain);
 
-    const state = await contract.query({
-      get_ownable_config: {}, // to be renamed to `get_ownership`
+    const info = await contract.query({
+      get_ownable_info: {},
     });
 
-    if (!state.isLocked) {
+    if (!info.isLocked) {
       throw Error('Ownable not lock');
     }
 

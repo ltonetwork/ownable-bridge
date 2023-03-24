@@ -1,8 +1,16 @@
 import * as vm from 'vm';
 
+type Dict<T = any> = { [_: string]: T };
+type CosmWasmEvent = { type: string; attributes: Array<{ key: string; value: any }> };
+
+interface MsgInfo {
+  sender: string;
+  funds: [];
+}
+
 export default class Contract {
   constructor(private sandbox: vm.Context) {
-    this.sandbox.idb = [];
+    this.sandbox.mem = { state_dump: [] };
   }
 
   private run(call: string, context: { [_: string]: any }): any {
@@ -25,46 +33,80 @@ export default class Contract {
     return result;
   }
 
-  private storeState(json: string) {
-    const mem = JSON.parse(json);
-    this.sandbox.idb = mem;
+  private static attributesToDict(attributes: Array<{ key: string; value: any }>): Dict {
+    return Object.fromEntries(attributes.map(({ key, value }) => [key, value]));
   }
 
-  private parseState(json: string): { [_: string]: any } {
-    const { attributes } = JSON.parse(json) as {
-      attributes: Array<{ key: string; value: any }>;
-    };
-
-    return Object.fromEntries(attributes.map((attr) => [attr.key, attr.value]));
+  private static eventAttributesToDict(events: CosmWasmEvent[]): Array<{ type: string; attributes: Dict }> {
+    return events.map(({ type, attributes }) => ({
+      type,
+      attributes: Contract.attributesToDict(attributes),
+    }));
   }
 
   async init(buffer: Buffer): Promise<void> {
     await this.run('init(buffer)', { buffer });
   }
 
-  async instantiate(msg: any, info: any): Promise<{ [_: string]: any }> {
+  async instantiate(msg: Dict, info: MsgInfo): Promise<{ attributes: Dict }> {
     const result: Map<string, any> = await this.run(
       'instantiate_contract(msg, info)',
       { msg, info },
     );
 
-    this.storeState(result.get('mem'));
-    return this.parseState(result.get('state'));
+    const response = JSON.parse(result.has('state') ? result.get('state') : result.get('result'));
+    this.sandbox.mem = JSON.parse(result.get('mem'));
+
+    return {
+      attributes: Contract.attributesToDict(response.attributes),
+    };
   }
 
-  async execute(msg: any, info: any): Promise<{ [_: string]: any }> {
+  async execute(
+    msg: Dict,
+    info: MsgInfo,
+  ): Promise<{ attributes: Dict; events: Array<{ type: string; attributes: Dict }>; data?: any }> {
     const result: Map<string, any> = await this.run(
-      'execute_contract(msg, info, "", idb)',
+      'execute_contract(msg, info, "", mem)',
       { msg, info },
     );
 
-    this.storeState(result.get('mem'));
-    return this.parseState(result.get('state'));
+    const response = JSON.parse(result.has('state') ? result.get('state') : result.get('result'));
+    this.sandbox.mem = JSON.parse(result.get('mem'));
+
+    return {
+      attributes: Contract.attributesToDict(response.attributes),
+      events: Contract.eventAttributesToDict(response.events || []),
+      data: response.data,
+    };
   }
 
-  async query(msg: any): Promise<any> {
-    const result = await this.run('query_contract_state(msg, idb)', { msg });
-    const state = JSON.parse(result.get('state'));
-    return JSON.parse(atob(state));
+  async externalEvent(
+    msg: Dict,
+    info: MsgInfo,
+  ): Promise<{ attributes: Dict; events: Array<{ type: string; attributes: Dict }>; data?: any }> {
+    const result: Map<string, any> = await this.run(
+      'register_external_event(msg, info, "", mem)',
+      { msg, info },
+    );
+
+    const response = JSON.parse(result.has('state') ? result.get('state') : result.get('result'));
+    this.sandbox.mem = JSON.parse(result.get('mem'));
+
+    return {
+      attributes: Contract.attributesToDict(response.attributes),
+      events: Contract.eventAttributesToDict(response.events || []),
+      data: response.data,
+    };
+  }
+
+  async queryRaw(msg: Dict): Promise<string> {
+    const result = await this.run('query_contract_state(msg, mem)', { msg });
+    return JSON.parse(result.has('state') ? result.get('state') : result.get('result'));
+  }
+
+  async query(msg: Dict): Promise<Dict> {
+    const resultB64 = await this.queryRaw(msg);
+    return JSON.parse(atob(resultB64));
   }
 }
