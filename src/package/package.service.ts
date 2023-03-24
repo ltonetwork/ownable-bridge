@@ -4,11 +4,9 @@ import JSZip from 'jszip';
 import * as fs from 'fs/promises';
 import fileExists from '../utils/fileExists';
 import path from 'path';
-import { Binary } from '@ltonetwork/lto';
 
 @Injectable()
 export class PackageService implements OnModuleInit {
-  private uploads: string;
   private path: string;
 
   constructor(
@@ -18,58 +16,52 @@ export class PackageService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.uploads = this.config.get('packages.uploads');
     this.path = this.config.get('packages.path');
-
     await fs.mkdir(this.path, { recursive: true });
   }
 
-  private async unzip(data: Uint8Array, dest: string): Promise<void> {
+  private async unzip(data: Uint8Array): Promise<Map<string, Buffer>> {
     const archive = await this.zip.loadAsync(data, { createFolders: true });
-    await fs.mkdir(dest, { recursive: true });
+
+    const entries: Array<[string, Buffer]> = await Promise.all(
+      Object.entries(archive.files)
+        .filter(([filename]) => filename !== 'chain.json')
+        .map(async ([filename, file]) => [filename, await file.async('nodebuffer')]),
+    );
+
+    return new Map(entries);
+  }
+
+  private async getCid(files: Map<string, Buffer>): Promise<string> {
+    const source = Array.from(files.entries()).map(([filename, content]) => ({
+      path: `./${filename}`,
+      content,
+    }));
+
+    for await (const entry of this.ipfs.addAll(source, { onlyHash: true, cidVersion: 1, recursive: true })) {
+      if (entry.path === entry.cid.toString() && !!entry.mode) return entry.cid.toString();
+    }
+    throw new Error('Failed to calculate directory CID: importer did not find a directory entry in the input files');
+  }
+
+  private async storeFiles(cid: string, files: Map<string, Buffer>): Promise<void> {
+    const packageDir = path.join(this.path, cid);
+    await fs.mkdir(packageDir, { recursive: true });
 
     await Promise.all(
-      Object.entries(archive.files).map(async ([filename, file]) => {
-        if (filename === 'chain.json') return;
-        const content = await file.async('nodebuffer');
-        return fs.writeFile(`${dest}/${filename}`, content);
-      }),
+      Array.from(files.entries()).map(
+        ([filename, content]) => fs.writeFile(path.join(packageDir, filename), content)
+      ),
     );
   }
 
-  private async getCid(path: string): Promise<string> {
-    const result = await this.ipfs.add(path, { onlyHash: true, cidVersion: 1 });
-    return result.cid.toString();
-  }
+  async store(data: Uint8Array): Promise<string> {
+    const files = await this.unzip(data);
+    const cid = await this.getCid(files);
 
-  private async storeByCid(dir: string): Promise<string> {
-    const cid = await this.getCid(dir);
-    const packageDir = `${this.path}/${cid}`;
-
-    if (await fileExists(packageDir)) {
-      // package already uploaded, with different zip file
-      await fs.rm(dir, { recursive: true, force: true });
-    } else {
-      await fs.rename(dir, packageDir);
-    }
-
-    const target = path.relative(path.resolve(path.dirname(dir)), path.resolve(packageDir));
-    await fs.symlink(target, dir);
+    await this.storeFiles(cid, files);
 
     return cid;
-  }
-
-  async store(data: Uint8Array): Promise<string> {
-    const dir = this.uploads + '/' + new Binary(data).hash().hex;
-
-    if (await fileExists(dir)) {
-      const link = await fs.readlink(dir);
-      return link.split('/').pop();
-    }
-
-    await this.unzip(data, dir);
-
-    return await this.storeByCid(dir);
   }
 
   async exists(cid: string): Promise<boolean> {

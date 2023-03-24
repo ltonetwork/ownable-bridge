@@ -99,9 +99,5 @@ export default {
       default: 'storage/packages',
       env: 'PACKAGES_PATH',
     },
-    uploads: {
-      default: 'storage/uploads',
-      env: 'PACKAGES_UPLOAD_PATH',
-    },
   },
 };
