@@ -49,6 +49,10 @@ export default class Contract {
   }
 
   async instantiate(msg: Dict, info: MsgInfo): Promise<{ attributes: Dict }> {
+    if (!('nft' in msg)) msg.nft = undefined;
+    if (!('ownable_type' in msg)) msg.ownable_type = undefined;
+    if (typeof msg.network_id === 'string') msg.network_id = msg.network_id.charCodeAt(0);
+
     const result: Map<string, any> = await this.run(
       'instantiate_contract(msg, info)',
       { msg, info },
@@ -67,7 +71,7 @@ export default class Contract {
     info: MsgInfo,
   ): Promise<{ attributes: Dict; events: Array<{ type: string; attributes: Dict }>; data?: any }> {
     const result: Map<string, any> = await this.run(
-      'execute_contract(msg, info, "", mem)',
+      'execute_contract(msg, info, mem)',
       { msg, info },
     );
 
@@ -86,7 +90,7 @@ export default class Contract {
     info: MsgInfo,
   ): Promise<{ attributes: Dict; events: Array<{ type: string; attributes: Dict }>; data?: any }> {
     const result: Map<string, any> = await this.run(
-      'register_external_event(msg, info, "", mem)',
+      'register_external_event(msg, info, mem)',
       { msg, info },
     );
 

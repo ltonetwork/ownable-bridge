@@ -30,10 +30,7 @@ async function bootstrap() {
 
   app.use(
     bodyParser.json({}),
-    bodyParser.raw({
-      type: ['application/octet-stream', 'application/zip'],
-      limit: '100MB',
-    }),
+    bodyParser.urlencoded({ extended: false }),
   );
 
   app.enableShutdownHooks();

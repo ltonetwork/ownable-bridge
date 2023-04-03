@@ -60,13 +60,8 @@ export class OwnableService implements OnModuleInit {
 
     await this.apply(contract, chain);
 
-    const info = await contract.query({
-      get_ownable_info: {},
-    });
-
-    if (!info.isLocked) {
-      throw Error('Ownable not lock');
-    }
+    const isLocked = await contract.query({ is_locked: {} });
+    if (!isLocked) throw Error("Ownable isn't locked");
 
     // Save event chain to DB
 

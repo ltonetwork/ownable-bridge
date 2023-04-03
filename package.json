@@ -27,7 +27,6 @@
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.1.4",
-    "@tweedegolf/storage-abstraction": "^1.4.3",
     "@types/convict": "^6.1.1",
     "babel-plugin-remove-import-export": "^1.1.1",
     "bs58": "^5.0.0",

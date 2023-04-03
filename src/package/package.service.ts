@@ -49,17 +49,24 @@ export class PackageService implements OnModuleInit {
     await fs.mkdir(packageDir, { recursive: true });
 
     await Promise.all(
-      Array.from(files.entries()).map(
-        ([filename, content]) => fs.writeFile(path.join(packageDir, filename), content)
-      ),
+      Array.from(files.entries()).map(([filename, content]) => fs.writeFile(path.join(packageDir, filename), content)),
     );
+  }
+
+  private async storeZip(cid: string, data: Uint8Array): Promise<void> {
+    const file = path.join(this.path, `${cid}.zip`);
+    await fs.writeFile(file, data);
   }
 
   async store(data: Uint8Array): Promise<string> {
     const files = await this.unzip(data);
+    if (!files.has('package.json')) throw new Error("Invalid package: 'package.json' is missing");
+
     const cid = await this.getCid(files);
+    if (await this.exists(cid)) return;
 
     await this.storeFiles(cid, files);
+    await this.storeZip(cid, data);
 
     return cid;
   }
@@ -68,7 +75,7 @@ export class PackageService implements OnModuleInit {
     return await fileExists(`${this.path}/${cid}`);
   }
 
-  file(cid: string, filename: string): string {
-    return `${this.path}/${cid}/${filename}`;
+  file(cid: string, filename?: string): string {
+    return filename ? `${this.path}/${cid}/${filename}` : `${this.path}/${cid}.zip`;
   }
 }

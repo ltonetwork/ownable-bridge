@@ -19,7 +19,7 @@ export class OwnableController {
     description: 'Event chain',
     required: true,
   })
-  async root(@Req() req: Request, @Res() res: Response): Promise<void> {
+  async root(@Req() req: Request, @Res() res: Response): Promise<Response> {
     const eventChainJson = req.body;
     if (!eventChainJson) {
       res.status(400).send('Failed to read event chain request');
@@ -33,10 +33,11 @@ export class OwnableController {
       eventChain.validate();
     } catch (e) {
       console.error(e);
-      res.status(400).send('Invalid event chain');
-      return;
+      return res.status(400).send('Invalid event chain');
     }
 
     await this.ownableService.accept(eventChain);
+
+    return res.status(201).send("Created");
   }
 }
