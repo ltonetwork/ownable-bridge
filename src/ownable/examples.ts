@@ -1,29 +1,29 @@
 export const eventChainExample = {
-  id: '88phhkquV9HvDRK4HYhxjgEqvKsT3D1Zei3k2tBHJeK4TsZkPaqe7b8aUPvCfKf',
+  id: '88pSEKJw8KBbvq5hZJCo6H2KeBaaPkJTyUkjU3B6UazghzDoqu8CesaGN2fHE3o',
   events: [
     {
-      timestamp: 1679623156957,
-      previous: 'GwmPUP2tfxzsCzsP5kgtbS3CUdSSpY3YdH7bDe96w81b',
+      timestamp: 1680525884033,
+      previous: '9HRc7PEyRFFrJ7QB1bL2VpEae7meEyzYGALUFG8GD2Ad',
       signKey: {
         keyType: 'ed25519',
-        publicKey: '2iAMvZNwZtuhCM9pEWkqFeBc1xNuS9joZWRt7usuBEzP',
+        publicKey: '4xHniTVs8JmKYvuS6ao8GqguTyDo7WWMdYXUyHWkgcKv',
       },
-      signature: '2gs4yGeoGpH3EuXrkxjWmGETLuP2RhePYCgWqiggX3NX8ibwvmBTaSsLzgzfbWovvxhcLMygbx8Zg9yPFi8xmwC3',
-      hash: 'G17HEpnDY9sgCMvGiLsmJq8Lxa1YvywJLXy1wXJNsnQr',
+      signature: '2NBuYvxccFo2o2zCbMkQrR7RVitHQeELRb3Wm7QhdEc25ATWqYSMkrCeSsBfZKaack9XddXffjHpQEmr2ZZEw9vZ',
+      hash: 'Eejij9Rj5D4Y9r921LQfp2e4PJPevHpeLa4zqkcRRDck',
       mediaType: 'application/json',
-      data: 'base64:eyJAY29udGV4dCI6Imluc3RhbnRpYXRlX21zZy5qc29uIiwib3duYWJsZV9pZCI6Ijg4cGhoa3F1VjlIdkRSSzRIWWh4amdFcXZLc1QzRDFaZWkzazJ0QkhKZUs0VHNaa1BhcWU3YjhhVVB2Q2ZLZiIsInBhY2thZ2UiOiJiYWZ5YmVpYTdvYWd4cWJ5amhucGp0ZmJ3eGZiZmVvaWhpcGpiNHBlNWtjbndnaHlmbHVhdTJmY3BqaSIsIm5ldHdvcmtfaWQiOiJUIn0=',
+      data: 'base64:eyJAY29udGV4dCI6Imluc3RhbnRpYXRlX21zZy5qc29uIiwib3duYWJsZV9pZCI6Ijg4cFNFS0p3OEtCYnZxNWhaSkNvNkgyS2VCYWFQa0pUeVVralUzQjZVYXpnaHpEb3F1OENlc2FHTjJmSEUzbyIsInBhY2thZ2UiOiJiYWZ5YmVpYnNyZjd0Z29jZ2Z2ZDRnb3F4aTRmdWd4dDNidG92a2s3MmY0aWRyNmxvNHNjcHFmeGRzbSIsIm5ldHdvcmtfaWQiOjg0fQ==',
     },
     {
-      timestamp: 1679623156967,
-      previous: 'G17HEpnDY9sgCMvGiLsmJq8Lxa1YvywJLXy1wXJNsnQr',
+      timestamp: 1680525884042,
+      previous: 'Eejij9Rj5D4Y9r921LQfp2e4PJPevHpeLa4zqkcRRDck',
       signKey: {
         keyType: 'ed25519',
-        publicKey: '2iAMvZNwZtuhCM9pEWkqFeBc1xNuS9joZWRt7usuBEzP',
+        publicKey: '4xHniTVs8JmKYvuS6ao8GqguTyDo7WWMdYXUyHWkgcKv',
       },
-      signature: '56yViJmrrwQHv9LcNqaitSBFeZa95NqnxhhH9qViMoNY9N3G2PGeMtdDJRxzvhbc69cBxxSD9rZpde3rfT1QCtF8',
-      hash: '5eACgL1rnkVeQK4uAsySj2ZufF2iuY9q2wsUnc6CfYPT',
+      signature: '5qBhrq5xzm8tDjmHnMFZ6iXA1YfFYQXuKWL5UitKy3BBn4LqujyDNLECA3CN1XNBg2y3y7kVvZuUZf45eakM4NyE',
+      hash: 'DhXRNbNpod4cM9UhAJjwE6TmCKMZrkqiJN1WSfnk3mec',
       mediaType: 'application/json',
-      data: 'base64:eyJAY29udGV4dCI6ImV4ZWN1dGVfbXNnLmpzb24iLCJtc2ciOnsib3duYWJsZV9sb2NrIjp7fX19',
+      data: 'base64:eyJAY29udGV4dCI6ImV4ZWN1dGVfbXNnLmpzb24iLCJsb2NrIjp7fX0=',
     },
   ],
 };

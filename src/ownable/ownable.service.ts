@@ -1,31 +1,27 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PackageService } from '../package/package.service';
-import { Account, EventChain, LTO } from '@ltonetwork/lto';
+import { EventChain } from '@ltonetwork/lto';
 import { ConfigService } from '../common/config/config.service';
 import { CosmWasmService } from '../cosmwasm/cosmwasm.service';
 import Contract from '../cosmwasm/contract';
+import fs from 'fs/promises';
 
 @Injectable()
 export class OwnableService implements OnModuleInit {
-  private account: Account;
+  private readonly path: string;
 
-  constructor(
-    private packages: PackageService,
-    private config: ConfigService,
-    private cosmWasm: CosmWasmService,
-    private lto: LTO,
-  ) {}
+  constructor(private packages: PackageService, private config: ConfigService, private cosmWasm: CosmWasmService) {
+    this.path = this.config.get('chains.path');
+  }
 
   async onModuleInit() {
-    this.account = this.lto.account({
-      seed: this.config.get('lto.seed'),
-    });
+    await fs.mkdir(this.path, { recursive: true });
   }
 
   private async apply(contract: Contract, chain: EventChain): Promise<void> {
     for (const event of chain.events) {
       const info: { sender: string; funds: [] } = {
-        sender: event.signKey!.publicKey.base58,
+        sender: event.signKey?.publicKey.base58,
         funds: [],
       };
       const { '@context': context, ...msg } = event.parsedData;
@@ -63,13 +59,15 @@ export class OwnableService implements OnModuleInit {
     const isLocked = await contract.query({ is_locked: {} });
     if (!isLocked) throw Error("Ownable isn't locked");
 
-    // Save event chain to DB
+    await fs.writeFile(`${this.path}/${chain.id}.json`, JSON.stringify(chain));
 
     // Generate proof to unlock NFT
-    //   state.nft = {
-    //     network: "eip115:5",
-    //     address: "....",
-    //     tokenId: "..."
-    //   }
+    // The info contains the nft contract address and the token id.
+    // Get the challenge from the NFT contract for this token id.
+    // Sign the challenge to generate the proof.
+
+    // const info = await contract.query({ info: {} });
+    // const challenge = await nftContract.query({ challenge: { token_id: info.token_id } });
+    // this.ethers.signMessage(challenge);
   }
 }

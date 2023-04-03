@@ -100,4 +100,10 @@ export default {
       env: 'PACKAGES_PATH',
     },
   },
+  chains: {
+    path: {
+      default: 'storage/chains',
+      env: 'CHAINS_PATH',
+    },
+  },
 };
