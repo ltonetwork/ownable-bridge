@@ -8,6 +8,12 @@ export default {
     default: 80,
     env: 'PORT',
   },
+  account: {
+    seed: {
+      default: '',
+      env: 'ACCOUNT_SEED',
+    },
+  },
   lto: {
     node: {
       default: 'https://testnet.lto.network',
@@ -17,16 +23,8 @@ export default {
       default: 'T',
       env: 'LTO_NETWORK_ID',
     },
-    seed: {
-      default: '',
-      env: 'LTO_WALLET_SEED',
-    },
   },
   eth: {
-    seed: {
-      default: '',
-      env: 'ETH_SEED',
-    },
     providers: {
       etherscan: {
         default: '',

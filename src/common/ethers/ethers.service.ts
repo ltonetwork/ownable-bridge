@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ethers } from 'ethers';
 import { ConfigService } from '../config/config.service';
 import * as abis from './abi';
+import { Networkish } from '@ethersproject/networks';
 
 type NetworkSettings = {
   id: number;
@@ -18,7 +19,7 @@ export class EthersService implements OnModuleInit {
   constructor(private config: ConfigService) {}
 
   onModuleInit(): void {
-    this.wallet = new ethers.Wallet(this.config.get('eth.seed'));
+    this.wallet = ethers.Wallet.fromMnemonic(this.config.get('account.seed'));
     this.initProviders();
   }
 
@@ -47,20 +48,25 @@ export class EthersService implements OnModuleInit {
       case 'alchemy':
         return new ethers.providers.AlchemyProvider(network.id, providerKeys.alchemy);
       case 'cloudflare':
-        return new ethers.providers.CloudflareProvider(network.id);
+        return new ethers.providers.CloudflareProvider(network.id, providerKeys.cloudflare);
       case 'pocket':
-        return new ethers.providers.CloudflareProvider(network.id, providerKeys.pocket);
+        return new ethers.providers.PocketProvider(network.id, providerKeys.pocket);
       case 'ankr':
         return new ethers.providers.AnkrProvider(network.id, providerKeys.ankr);
     }
   }
 
-  public getContract(type: string, network: number | string, address: string): ethers.Contract {
+  public getContract(type: keyof typeof abis, network: Networkish, address: string): ethers.Contract {
     if (!(type in abis)) throw new Error(`No ABI for ${type}`);
-    return new ethers.Contract(address, abis[type], this.providers.get(network));
+
+    const networkId = typeof network === 'object' ? network.chainId : network;
+    const provider = this.providers.get(networkId);
+    if (!provider) throw new Error(`No provider for network ${networkId}`);
+
+    return new ethers.Contract(address, abis[type], provider);
   }
 
-  public signMessage(message: string | ArrayLike<number>) {
+  public signMessage(message: string | ArrayLike<number>): Promise<string> {
     return this.wallet.signMessage(message);
   }
 }

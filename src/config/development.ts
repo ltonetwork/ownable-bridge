@@ -1,6 +1,6 @@
 export default {
-  lto: {
-    seed: 'earth apology marble forum exclude plunge grape upset actual legal mutual toward learn glare report',
+  account: {
+    seed: 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
   },
   ipfs: {
     start: false,
