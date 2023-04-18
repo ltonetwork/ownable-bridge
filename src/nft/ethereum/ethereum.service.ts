@@ -3,7 +3,7 @@ import { EthersService } from '../../common/ethers/ethers.service';
 import { NFTInfo } from '../../interfaces/OwnableInfo';
 
 @Injectable()
-export class Erc721Service {
+export class EthereumService {
   constructor(private ethers: EthersService) {}
 
   public async getUnlockProof(nft: NFTInfo): Promise<string> {

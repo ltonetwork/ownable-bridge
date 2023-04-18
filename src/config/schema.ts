@@ -14,6 +14,10 @@ export default {
       env: 'ACCOUNT_SEED',
     },
   },
+  unlockNFT: {
+    default: true,
+    env: 'UNLOCK_NFT',
+  },
   lto: {
     node: {
       default: 'https://testnet.lto.network',

@@ -10,7 +10,7 @@ import { integerToByteArray } from '@ltonetwork/lto/lib/utils/convert';
 import { NFTService } from '../nft/nft.service';
 
 interface InfoWithProof extends OwnableInfo {
-  proof: string;
+  proof?: string;
 }
 
 @Injectable()
@@ -102,7 +102,7 @@ export class OwnableService implements OnModuleInit {
 
     await fs.writeFile(`${this.path}/${chain.id}.json`, JSON.stringify(chain));
 
-    const proof = await this.nft.getUnlockProof(info.nft);
+    const proof = this.config.get('unlockNFT') ? await this.nft.getUnlockProof(info.nft) : undefined;
 
     return { ...info, proof };
   }

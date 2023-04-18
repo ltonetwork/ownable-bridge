@@ -63,7 +63,7 @@ export class PackageService implements OnModuleInit {
     if (!files.has('package.json')) throw new Error("Invalid package: 'package.json' is missing");
 
     const cid = await this.getCid(files);
-    if (await this.exists(cid)) return;
+    if (await this.exists(cid)) return cid;
 
     await this.storeFiles(cid, files);
     await this.storeZip(cid, data);

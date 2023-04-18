@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { NFTService } from './nft.service';
-import { Erc721Service } from './ethereum/erc721.service';
+import { EthereumService } from './ethereum/ethereum.service';
 
 @Module({
-  providers: [NFTService, Erc721Service],
+  providers: [NFTService, EthereumService],
   exports: [NFTService],
 })
 export class NFTModule {}

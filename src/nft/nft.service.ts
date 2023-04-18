@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Erc721Service } from './ethereum/erc721.service';
+import { EthereumService } from './ethereum/ethereum.service';
 import { NFTInfo } from '../interfaces/OwnableInfo';
 
 @Injectable()
 export class NFTService {
-  constructor(private ethereum: Erc721Service) {}
+  constructor(private ethereum: EthereumService) {}
 
   async getUnlockProof(nft: NFTInfo): Promise<string> {
     if (nft.network.startsWith('eip155:')) {

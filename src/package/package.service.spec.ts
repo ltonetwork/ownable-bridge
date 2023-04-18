@@ -12,13 +12,27 @@ jest.mock('fs/promises');
 describe('PackageService', () => {
   let service: PackageService;
   const ipfs = {
-    add: jest.fn((path: string) => ({
-      cid: { toString: () => new Binary('[IPFS]' + path).hash().base58 },
-    })),
+    addAll: jest.fn(async function* (items: { content: string; path: string }[]) {
+      for (const item of items) {
+        yield {
+          cid: { toString: () => new Binary(item.content).hash().base58 },
+          path: item.path,
+          mode: 0o755,
+        };
+      }
+
+      const dirCid = new Binary(items.map((item) => item.content).join('')).hash().base58;
+      yield {
+        cid: { toString: () => dirCid },
+        path: dirCid,
+        mode: 0o755,
+      };
+    }),
   };
   const zip = {
     loadAsync: jest.fn(() => ({
       files: {
+        'package.json': { async: jest.fn(() => Promise.resolve('{}')) },
         foo: { async: jest.fn(() => Promise.resolve('_foo_')) },
         bar: { async: jest.fn(() => Promise.resolve('_bar_')) },
       },
@@ -68,8 +82,8 @@ describe('PackageService', () => {
 
   describe('store()', () => {
     const buffer = new Uint8Array([1, 2, 3]);
-    const uploadPath = 'storage/uploads/' + new Binary(buffer).hash().hex;
-    const cid = new Binary('[IPFS]' + uploadPath).hash().base58;
+    const cid = new Binary('{}_foo__bar_').hash().base58;
+    const uploadPath = 'storage/packages';
 
     beforeEach(() => {
       fs.access.mockReset();
@@ -87,13 +101,11 @@ describe('PackageService', () => {
       expect(await service.store(buffer)).toEqual(cid);
 
       expect(zip.loadAsync).toBeCalledWith(buffer, { createFolders: true });
-      expect(fs.writeFile).toBeCalledTimes(2);
-      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/foo`, '_foo_');
-      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/bar`, '_bar_');
-
-      expect(fs.rename).toBeCalledWith(uploadPath, `storage/packages/${cid}`);
-      expect(fs.rm).not.toBeCalled();
-      expect(fs.symlink).toBeCalledWith(`../packages/${cid}`, uploadPath);
+      expect(fs.writeFile).toBeCalledTimes(4);
+      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/${cid}/package.json`, '{}');
+      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/${cid}/foo`, '_foo_');
+      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/${cid}/bar`, '_bar_');
+      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/${cid}.zip`, buffer);
     });
 
     it('skips an existing package', async () => {
@@ -102,26 +114,9 @@ describe('PackageService', () => {
 
       expect(await service.store(buffer)).toEqual(cid);
 
-      expect(zip.loadAsync).not.toBeCalled();
       expect(fs.writeFile).not.toBeCalled();
       expect(fs.rename).not.toBeCalled();
       expect(fs.symlink).not.toBeCalled();
-    });
-
-    it('links an existing package to an upload', async () => {
-      fs.access.mockReturnValueOnce(Promise.reject());
-      fs.access.mockReturnValueOnce(Promise.resolve());
-
-      expect(await service.store(buffer)).toEqual(cid);
-
-      expect(zip.loadAsync).toBeCalledWith(buffer, { createFolders: true });
-      expect(fs.writeFile).toBeCalledTimes(2);
-      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/foo`, '_foo_');
-      expect(fs.writeFile).toBeCalledWith(`${uploadPath}/bar`, '_bar_');
-
-      expect(fs.rename).not.toBeCalled();
-      expect(fs.rm).toBeCalledWith(uploadPath, { recursive: true, force: true });
-      expect(fs.symlink).toBeCalledWith(`../packages/${cid}`, uploadPath);
     });
   });
 });
