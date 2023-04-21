@@ -5,13 +5,14 @@ import { CosmWasmModule } from '../cosmwasm/cosmwasm.module';
 import { LtoModule } from '../common/lto/lto.module';
 import { PackageService } from '../package/package.service';
 import JSZip from 'jszip';
+import { NFTModule } from '../nft/nft.module';
 
 describe('OwnableService', () => {
   let service: OwnableService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule, LtoModule, CosmWasmModule],
+      imports: [ConfigModule, LtoModule, CosmWasmModule, NFTModule],
       providers: [OwnableService, PackageService, { provide: JSZip, useValue: {} }, { provide: 'IPFS', useValue: {} }],
     }).compile();
     await module.init();

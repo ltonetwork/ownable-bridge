@@ -92,21 +92,23 @@ describe('CosmWasmService', () => {
   });
 
   describe('execute', () => {
-    it('executes a message on the smart contract', async () => {
+    beforeEach(async () => {
       await contract.instantiate(
-        { ownable_id: '88pDRu52FpsU3kKHwdvPV21RMkBqVqNnthjfdCesTHQhLnUpanw49n6b2PzGnEy' },
+        {
+          ownable_id: '88pDRu52FpsU3kKHwdvPV21RMkBqVqNnthjfdCesTHQhLnUpanw49n6b2PzGnEy',
+          package: 'bafybeie4ts4mbcw4pswzh45bj32ulcyztup2dr7zbbjv3y2ym3q3uuejba',
+          network_id: 'T',
+        },
         { sender: account.publicKey, funds: [] },
       );
+    });
 
-      const result = await contract.execute(
-        { drink: { amount: 42 } },
-        { sender: account.publicKey, funds: [] },
-      );
+    it('executes a message on the smart contract', async () => {
+      const result = await contract.execute({ drink: { amount: 42 } }, { sender: account.publicKey, funds: [] });
       assert.equal(result.attributes.method, 'try_drink');
       assert.equal(result.attributes.new_amount, 58);
 
-      const state = await contract.query({ get_ownable_config: {} });
-      assert.equal(state.owner, account.address);
+      const state = await contract.query({ get_widget_state: {} });
       assert.equal(state.current_amount, 58);
     });
   });
