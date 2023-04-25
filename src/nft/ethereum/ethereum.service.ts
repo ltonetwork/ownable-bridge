@@ -8,7 +8,7 @@ export class EthereumService {
 
   public async getUnlockProof(nft: NFTInfo): Promise<string> {
     const nftContract = this.ethers.getContract('IERC721Lockable', nft.network, nft.address);
-    const challenge = await nftContract.query({ challenge: { token_id: nft.id } });
+    const challenge = await nftContract.unlockChallenge(nft.id);
 
     return await this.ethers.signMessage(challenge);
   }

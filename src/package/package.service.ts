@@ -78,4 +78,11 @@ export class PackageService implements OnModuleInit {
   file(cid: string, filename?: string): string {
     return filename ? `${this.path}/${cid}/${filename}` : `${this.path}/${cid}.zip`;
   }
+
+  async hasMethod(cid: string, msgType: string, method: string): Promise<boolean> {
+    const json = await fs.readFile(this.file(cid, `${msgType}_msg.json`), 'utf8');
+    const schema = JSON.parse(json);
+
+    return schema.oneOf.findIndex((m) => m.required.includes(method)) >= 0;
+  }
 }

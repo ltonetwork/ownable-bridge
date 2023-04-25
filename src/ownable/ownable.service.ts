@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PackageService } from '../package/package.service';
-import { Binary, EventChain, LTO } from '@ltonetwork/lto';
+import { Account, Binary, EventChain, LTO } from '@ltonetwork/lto';
 import { ConfigService } from '../common/config/config.service';
 import { CosmWasmService } from '../cosmwasm/cosmwasm.service';
 import Contract from '../cosmwasm/contract';
@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import { NFTInfo, OwnableInfo } from '../interfaces/OwnableInfo';
 import { integerToByteArray } from '@ltonetwork/lto/lib/utils/convert';
 import { NFTService } from '../nft/nft.service';
+import { LtoIndexService } from '../common/lto-index/lto-index.service';
 
 interface InfoWithProof extends OwnableInfo {
   proof?: string;
@@ -21,8 +22,9 @@ export class OwnableService implements OnModuleInit {
     private packages: PackageService,
     private config: ConfigService,
     private cosmWasm: CosmWasmService,
-    private lto: LTO,
     private nft: NFTService,
+    private lto: LTO,
+    private ltoIndex: LtoIndexService,
   ) {
     this.path = this.config.get('chains.path');
   }
@@ -31,8 +33,22 @@ export class OwnableService implements OnModuleInit {
     await fs.mkdir(this.path, { recursive: true });
   }
 
-  private async apply(contract: Contract, chain: EventChain): Promise<void> {
+  private async apply(packageCid: string, contract: Contract, chain: EventChain): Promise<void> {
+    const accounts = new Map<string, Account>;
+
+    const canWrite = (await this.packages.hasMethod(packageCid, 'query', 'canWrite'))
+      ? async (address: string): Promise<boolean> => await contract.query({ can_write: { address } })
+      : async (address: string) => await contract.query({ get_info: {} }).then((info) => info.owner === address);
+
+    const anchors = this.ltoIndex.verifyAnchors(chain.anchorMap);
+
+    console.log(anchors);
+
     for (const event of chain.events) {
+      const publicKey = event.signKey?.publicKey.base58;
+      if (!accounts.has(publicKey)) accounts.set(publicKey, this.lto.account(event.signKey));
+      const account = accounts.get(publicKey);
+
       const info: { sender: string; funds: [] } = {
         sender: event.signKey?.publicKey.base58,
         funds: [],
@@ -67,7 +83,7 @@ export class OwnableService implements OnModuleInit {
       this.packages.file(packageCid, 'ownable_bg.wasm'),
     );
 
-    await this.apply(contract, chain);
+    await this.apply(packageCid, contract, chain);
 
     return contract;
   }

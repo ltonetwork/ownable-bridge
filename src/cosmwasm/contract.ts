@@ -109,7 +109,7 @@ export default class Contract {
     return JSON.parse(result.has('state') ? result.get('state') : result.get('result'));
   }
 
-  async query(msg: Dict): Promise<Dict> {
+  async query(msg: Dict): Promise<any> {
     const resultB64 = await this.queryRaw(msg);
     return JSON.parse(atob(resultB64));
   }
