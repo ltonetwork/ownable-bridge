@@ -96,16 +96,28 @@ export default {
       env: 'IPFS_START',
     },
   },
-  packages: {
-    path: {
+  path: {
+    packages: {
       default: 'storage/packages',
       env: 'PACKAGES_PATH',
     },
-  },
-  chains: {
-    path: {
+    chains: {
       default: 'storage/chains',
       env: 'CHAINS_PATH',
+    },
+  },
+  verify: {
+    integrity: {
+      default: true,
+      env: 'VERIFY_INTEGRITY',
+    },
+    submitter: {
+      default: true,
+      env: 'VERIFY_SUBMITTER',
+    },
+    chain_id: {
+      default: true,
+      env: 'VERIFY_CHAIN_ID',
     },
   },
 };

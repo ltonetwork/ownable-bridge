@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PackageService } from '../package/package.service';
-import { Account, Binary, EventChain, LTO } from '@ltonetwork/lto';
+import { Account, Binary, EventChain, Event, LTO } from '@ltonetwork/lto';
 import { ConfigService } from '../common/config/config.service';
 import { CosmWasmService } from '../cosmwasm/cosmwasm.service';
 import Contract from '../cosmwasm/contract';
@@ -26,7 +26,7 @@ export class OwnableService implements OnModuleInit {
     private lto: LTO,
     private ltoIndex: LtoIndexService,
   ) {
-    this.path = this.config.get('chains.path');
+    this.path = this.config.get('path.chains');
   }
 
   async onModuleInit() {
@@ -34,7 +34,13 @@ export class OwnableService implements OnModuleInit {
   }
 
   private async apply(packageCid: string, contract: Contract, chain: EventChain): Promise<void> {
-    const accounts = new Map<string, Account>;
+    for (const event of chain.events) {
+      await this.applyEvent(contract, event);
+    }
+  }
+
+  private async applyAndVerify(packageCid: string, contract: Contract, chain: EventChain): Promise<void> {
+    const accounts = new Map<string, Account>();
 
     const canWrite = (await this.packages.hasMethod(packageCid, 'query', 'canWrite'))
       ? async (address: string): Promise<boolean> => await contract.query({ can_write: { address } })
@@ -49,25 +55,29 @@ export class OwnableService implements OnModuleInit {
       if (!accounts.has(publicKey)) accounts.set(publicKey, this.lto.account(event.signKey));
       const account = accounts.get(publicKey);
 
-      const info: { sender: string; funds: [] } = {
-        sender: event.signKey?.publicKey.base58,
-        funds: [],
-      };
-      const { '@context': context, ...msg } = event.parsedData;
+      await this.applyEvent(contract, event);
+    }
+  }
 
-      switch (context) {
-        case 'instantiate_msg.json':
-          await contract.instantiate(msg, info);
-          break;
-        case 'execute_msg.json':
-          await contract.execute(msg, info);
-          break;
-        case 'external_event_msg.json':
-          await contract.externalEvent(msg, info);
-          break;
-        default:
-          throw new Error('Unknown event type');
-      }
+  private async applyEvent(contract: Contract, event: Event): Promise<void> {
+    const info: { sender: string; funds: [] } = {
+      sender: event.signKey?.publicKey.base58,
+      funds: [],
+    };
+    const { '@context': context, ...msg } = event.parsedData;
+
+    switch (context) {
+      case 'instantiate_msg.json':
+        await contract.instantiate(msg, info);
+        break;
+      case 'execute_msg.json':
+        await contract.execute(msg, info);
+        break;
+      case 'external_event_msg.json':
+        await contract.externalEvent(msg, info);
+        break;
+      default:
+        throw new Error('Unknown event type');
     }
   }
 
@@ -102,7 +112,12 @@ export class OwnableService implements OnModuleInit {
   }
 
   async accept(chain: EventChain): Promise<InfoWithProof> {
+    const packageCid = chain.events[0].parsedData.package;
     const contract = await this.loadContract(chain);
+
+    this.config.get('verify.integrity')
+      ? await this.applyAndVerify(packageCid, contract, chain)
+      : await this.apply(packageCid, contract, chain);
 
     const isLocked = await contract.query({ is_locked: {} });
     if (!isLocked) throw Error("Ownable isn't locked");
@@ -112,7 +127,7 @@ export class OwnableService implements OnModuleInit {
       throw new Error('Ownable is not associated with an NFT');
     }
 
-    if (!this.verifyChainId(chain, info.nft)) {
+    if (this.config.get('verify.chain_id') && !this.verifyChainId(chain, info.nft)) {
       throw new Error('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
     }
 
