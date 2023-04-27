@@ -111,7 +111,19 @@ export class OwnableService implements OnModuleInit {
     return chain.id === expectedId;
   }
 
-  async accept(chain: EventChain): Promise<InfoWithProof> {
+  async unlock(chain: EventChain, info: OwnableInfo): Promise<string> {
+    if (!info.nft) {
+      throw new Error('Ownable is not associated with an NFT');
+    }
+
+    if (this.config.get('verify.chain_id') && !this.verifyChainId(chain, info.nft)) {
+      throw new Error('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
+    }
+
+    return await this.nft.getUnlockProof(info.nft);
+  }
+
+  async accept(chain: EventChain, signer: Account | undefined): Promise<InfoWithProof> {
     const packageCid = chain.events[0].parsedData.package;
     const contract = await this.loadContract(chain);
 
@@ -123,17 +135,14 @@ export class OwnableService implements OnModuleInit {
     if (!isLocked) throw Error("Ownable isn't locked");
 
     const info = (await contract.query({ get_info: {} })) as OwnableInfo;
-    if (!info.nft) {
-      throw new Error('Ownable is not associated with an NFT');
-    }
 
-    if (this.config.get('verify.chain_id') && !this.verifyChainId(chain, info.nft)) {
-      throw new Error('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
+    if (this.config.get('verify.signer') && info.owner !== signer?.address) {
+      throw new Error('HTTP Request was not signed by the owner of the Ownable');
     }
-
-    await fs.writeFile(`${this.path}/${chain.id}.json`, JSON.stringify(chain));
 
     const proof = this.config.get('unlockNFT') ? await this.nft.getUnlockProof(info.nft) : undefined;
+
+    await fs.writeFile(`${this.path}/${chain.id}.json`, JSON.stringify(chain));
 
     return { ...info, proof };
   }

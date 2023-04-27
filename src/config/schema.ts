@@ -111,9 +111,9 @@ export default {
       default: true,
       env: 'VERIFY_INTEGRITY',
     },
-    submitter: {
+    signer: {
       default: true,
-      env: 'VERIFY_SUBMITTER',
+      env: 'VERIFY_SIGNER',
     },
     chain_id: {
       default: true,

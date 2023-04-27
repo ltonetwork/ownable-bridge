@@ -1,9 +1,10 @@
 import { Controller, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { OwnableService } from './ownable.service';
-import { EventChain } from '@ltonetwork/lto';
+import { Account, EventChain } from '@ltonetwork/lto';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { eventChainExample } from './examples';
+import { Signer } from '../common/signature/signer';
 
 @Controller('ownables')
 export class OwnableController {
@@ -19,7 +20,7 @@ export class OwnableController {
     description: 'Event chain',
     required: true,
   })
-  async root(@Req() req: Request, @Res() res: Response): Promise<Response> {
+  async root(@Req() req: Request, @Res() res: Response, @Signer() signer?: Account): Promise<Response> {
     const eventChainJson = req.body;
     if (!eventChainJson) {
       res.status(400).send('Failed to read event chain request');
@@ -36,7 +37,7 @@ export class OwnableController {
       return res.status(400).send('Invalid event chain');
     }
 
-    await this.ownableService.accept(eventChain);
+    await this.ownableService.accept(eventChain, signer);
 
     return res.status(201).send("Created");
   }
