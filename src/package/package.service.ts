@@ -16,7 +16,7 @@ export class PackageService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.path = this.config.get('packages.path');
+    this.path = this.config.get('path.packages');
     await fs.mkdir(this.path, { recursive: true });
   }
 

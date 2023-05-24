@@ -8,4 +8,4 @@ import { LtoIndexService } from './lto-index.service';
   providers: [LtoIndexService],
   exports: [LtoIndexService],
 })
-export class LtoModule {}
+export class LtoIndexModule {}

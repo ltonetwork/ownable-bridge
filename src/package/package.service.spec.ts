@@ -42,11 +42,7 @@ describe('PackageService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule],
-      providers: [
-        PackageService,
-        { provide: 'IPFS', useValue: ipfs },
-        { provide: JSZip, useValue: zip },
-      ],
+      providers: [PackageService, { provide: 'IPFS', useValue: ipfs }, { provide: JSZip, useValue: zip }],
     }).compile();
     await module.init();
 

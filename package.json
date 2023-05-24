@@ -23,7 +23,7 @@
   "dependencies": {
     "@babel/core": "^7.20.12",
     "@ltonetwork/http-message-signatures": "^0.1.0",
-    "@ltonetwork/lto": "^0.11.5",
+    "@ltonetwork/lto": "^0.12.3",
     "@nestjs/axios": "^2.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",

@@ -8,8 +8,8 @@ import { lastValueFrom } from 'rxjs';
 export class LtoIndexService {
   constructor(private config: ConfigService, private http: HttpService) {}
 
-  async verifyAnchors(anchors: Array<{ key: Binary; value: Binary }>): Promise<any> {
-    const entries = anchors.map(({ key, value }) => [key.hex, value.hex]);
+  async verifyAnchors(anchors: Array<{ key: Binary; value: Binary; signer: string }>): Promise<any> {
+    const entries = anchors.map(({ key, value, signer }) => [key.hex, { hash: value.hex, sender: signer }]);
     const data = Object.fromEntries(entries);
 
     const url = `${this.config.get('lto.node')}/index/hash/verify?encoding=hex`;

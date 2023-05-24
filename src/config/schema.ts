@@ -115,7 +115,7 @@ export default {
       default: true,
       env: 'VERIFY_SIGNER',
     },
-    chain_id: {
+    chainId: {
       default: true,
       env: 'VERIFY_CHAIN_ID',
     },
