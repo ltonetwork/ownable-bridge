@@ -8,6 +8,7 @@ import { LtoIndexService } from '../common/lto-index/lto-index.service';
 import { LTO, EventChain, Binary, Event } from '@ltonetwork/lto';
 import { LtoModule } from '../common/lto/lto.module';
 import { NFTInfo } from '../interfaces/OwnableInfo';
+import { HttpService } from '@nestjs/axios';
 
 describe('OwnableService', () => {
   let service: OwnableService;
@@ -15,6 +16,7 @@ describe('OwnableService', () => {
   let mockCosmWasmService: any;
   let mockNFTService: any;
   let mockLtoIndexService: any;
+  let mockHttpService: any;
   let lto: LTO;
 
   beforeEach(async () => {
@@ -30,6 +32,9 @@ describe('OwnableService', () => {
     };
     mockLtoIndexService = {
       verifyAnchors: jest.fn(),
+    };
+    mockHttpService = {
+      post: jest.fn(),
     };
   });
 
@@ -47,6 +52,7 @@ describe('OwnableService', () => {
         { provide: NFTService, useValue: mockNFTService },
         { provide: LtoIndexService, useValue: mockLtoIndexService },
         { provide: LTO, useValue: lto },
+        { provide: HttpService, useValue: mockHttpService },
       ],
     }).compile();
 
@@ -105,6 +111,11 @@ describe('OwnableService', () => {
     expect(mockContract.query).toHaveBeenNthCalledWith(2, { get_info: {} });
     expect(mockNFTService.getUnlockProof).toBeCalledWith(nftInfo);
     expect(mockLtoIndexService.verifyAnchors).toBeCalledWith(chain.anchorMap);
+    expect(mockHttpService.post).toBeCalledWith('https://example.com/webhook', {
+      chain: chain.toJSON(),
+      ownable: { owner: owner.address, issuer: issuer.address, nft: nftInfo },
+      packageCid: 'packageCid',
+    });
 
     expect(result).toEqual({
       owner: owner.address,

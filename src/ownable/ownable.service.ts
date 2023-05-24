@@ -8,6 +8,7 @@ import fs from 'fs/promises';
 import { NFTInfo, OwnableInfo } from '../interfaces/OwnableInfo';
 import { NFTService } from '../nft/nft.service';
 import { LtoIndexService } from '../common/lto-index/lto-index.service';
+import { HttpService } from '@nestjs/axios';
 
 interface InfoWithProof extends OwnableInfo {
   proof?: string;
@@ -24,6 +25,7 @@ export class OwnableService implements OnModuleInit {
     private nft: NFTService,
     private lto: LTO,
     private ltoIndex: LtoIndexService,
+    private http: HttpService,
   ) {
     this.path = this.config.get('path.chains');
   }
@@ -54,9 +56,7 @@ export class OwnableService implements OnModuleInit {
     }
   }
 
-  private async loadContract(chain: EventChain) {
-    const packageCid: string = chain.events[0].parsedData.package;
-
+  private async loadContract(packageCid: string, chain: EventChain) {
     if (!(await this.packages.exists(packageCid))) {
       throw new Error('Unknown ownable package');
     }
@@ -98,8 +98,16 @@ export class OwnableService implements OnModuleInit {
     return await this.nft.getUnlockProof(info.nft);
   }
 
+  private postToWebhook(chain: EventChain, info: OwnableInfo, packageCid: string) {
+    const webhook = this.config.get('accept.webhook');
+    if (!webhook) return;
+
+    this.http.post(webhook, { chain: chain.toJSON(), ownable: info, packageCid });
+  }
+
   async accept(chain: EventChain, signer: Account | undefined): Promise<InfoWithProof> {
-    const contract = await this.loadContract(chain);
+    const packageCid: string = chain.events[0].parsedData.package;
+    const contract = await this.loadContract(packageCid, chain);
 
     if (this.config.get('verify.integrity')) {
       const { verified } = await this.ltoIndex.verifyAnchors(chain.anchorMap);
@@ -115,9 +123,10 @@ export class OwnableService implements OnModuleInit {
       throw new Error('HTTP Request is not signed by the owner of the Ownable');
     }
 
-    const proof = this.config.get('unlockNFT') ? await this.unlock(chain, info) : undefined;
+    const proof = this.config.get('accept.unlockNFT') ? await this.unlock(chain, info) : undefined;
 
     await fs.writeFile(`${this.path}/${chain.id}.json`, JSON.stringify(chain));
+    this.postToWebhook(chain, info, packageCid);
 
     return { ...info, proof };
   }

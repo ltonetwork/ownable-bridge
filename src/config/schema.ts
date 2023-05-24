@@ -14,9 +14,15 @@ export default {
       env: 'ACCOUNT_SEED',
     },
   },
-  unlockNFT: {
-    default: true,
-    env: 'UNLOCK_NFT',
+  accept: {
+    unlockNFT: {
+      default: true,
+      env: 'UNLOCK_NFT',
+    },
+    webhook: {
+      default: '',
+      env: 'ACCEPT_WEBHOOK',
+    },
   },
   lto: {
     node: {
