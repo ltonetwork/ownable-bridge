@@ -1,14 +1,15 @@
-import { Controller, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { OwnableService } from './ownable.service';
 import { Account, EventChain } from '@ltonetwork/lto';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { eventChainExample } from './examples';
 import { Signer } from '../common/signature/signer';
+import { AuthError, UserError } from '../interfaces/error';
 
 @Controller('ownables')
 export class OwnableController {
-  constructor(private ownableService: OwnableService) {}
+  constructor(private service: OwnableService) {}
 
   @Post('/')
   @ApiConsumes('application/json')
@@ -20,25 +21,46 @@ export class OwnableController {
     description: 'Event chain',
     required: true,
   })
-  async root(@Req() req: Request, @Res() res: Response, @Signer() signer?: Account): Promise<Response> {
+  async submit(@Req() req: Request, @Res() res: Response, @Signer() signer?: Account): Promise<Response> {
     const eventChainJson = req.body;
     if (!eventChainJson) {
       res.status(400).send('Failed to read event chain request');
       return;
     }
 
-    let eventChain: EventChain;
-
     try {
-      eventChain = EventChain.from(eventChainJson);
-      eventChain.validate();
-    } catch (e) {
-      console.error(e);
-      return res.status(400).send('Invalid event chain');
+      await this.service.accept(EventChain.from(eventChainJson), signer);
+      return res.status(201).send('Created');
+    } catch (err) {
+      return this.errorResponse(res, err);
+    }
+  }
+
+  @Get('/:id')
+  @ApiConsumes('application/json')
+  async claim(
+    @Param('id') id,
+    @Req() req: Request,
+    @Res() res: Response,
+    @Signer() signer?: Account,
+  ): Promise<Response> {
+    if (!(await this.service.exists(id))) {
+      return res.status(404).send('Event chain not available on this bridge');
     }
 
-    await this.ownableService.accept(eventChain, signer);
+    try {
+      const zip = await this.service.claim(id, signer);
+      return res.status(200).contentType('application/zip').send(zip);
+    } catch (err) {
+      return this.errorResponse(res, err);
+    }
+  }
 
-    return res.status(201).send("Created");
+  private errorResponse(res: Response, err: any) {
+    if (err instanceof AuthError) return res.status(403).send(err.message);
+    if (err instanceof UserError) return res.status(400).send(err.message);
+
+    console.error(err);
+    return res.status(500).send('Unexpected error');
   }
 }

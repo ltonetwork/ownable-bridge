@@ -9,6 +9,8 @@ import { NFTInfo, OwnableInfo } from '../interfaces/OwnableInfo';
 import { NFTService } from '../nft/nft.service';
 import { LtoIndexService } from '../common/lto-index/lto-index.service';
 import { HttpService } from '@nestjs/axios';
+import { AuthError, UserError } from '../interfaces/error';
+import fileExists from '../utils/fileExists';
 
 interface InfoWithProof extends OwnableInfo {
   proof?: string;
@@ -52,13 +54,13 @@ export class OwnableService implements OnModuleInit {
         await contract.externalEvent(msg, info);
         break;
       default:
-        throw new Error('Unknown event type');
+        throw new UserError(`Unknown event type: ${context}`);
     }
   }
 
   private async loadContract(packageCid: string, chain: EventChain) {
     if (!(await this.packages.exists(packageCid))) {
-      throw new Error('Unknown ownable package');
+      throw new UserError('Unknown ownable package');
     }
 
     const contract = await this.cosmWasm.load(
@@ -88,11 +90,11 @@ export class OwnableService implements OnModuleInit {
 
   private async unlock(chain: EventChain, info: OwnableInfo): Promise<string> {
     if (!info.nft) {
-      throw new Error('Ownable is not associated with an NFT');
+      throw new UserError('Ownable is not associated with an NFT');
     }
 
     if (this.config.get('verify.chainId') && !this.verifyChainId(chain, info.nft)) {
-      throw new Error('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
+      throw new UserError('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
     }
 
     return await this.nft.getUnlockProof(info.nft);
@@ -105,23 +107,33 @@ export class OwnableService implements OnModuleInit {
     this.http.post(webhook, { chain: chain.toJSON(), ownable: info, packageCid });
   }
 
-  async accept(chain: EventChain, signer: Account | undefined): Promise<InfoWithProof> {
-    const packageCid: string = chain.events[0].parsedData.package;
-    const contract = await this.loadContract(packageCid, chain);
+  async exists(chainId: string): Promise<boolean> {
+    return await fileExists(`${this.path}/${chainId}.json`);
+  }
 
-    if (this.config.get('verify.integrity')) {
-      const { verified } = await this.ltoIndex.verifyAnchors(chain.anchorMap);
-      if (!verified) throw new Error('Chain integrity could not be verified: Mismatch in anchor map');
+  async accept(chain: EventChain, signer: Account | undefined): Promise<InfoWithProof> {
+    try {
+      chain.validate();
+    } catch (e) {
+      throw new UserError('Invalid event chain');
     }
 
-    const isLocked = await contract.query({ is_locked: {} });
-    if (!isLocked) throw Error('Ownable is not locked');
+    const packageCid: string = chain.events[0].parsedData.package;
+    const contract = await this.loadContract(packageCid, chain);
 
     const info = (await contract.query({ get_info: {} })) as OwnableInfo;
 
     if (this.config.get('verify.signer') && info.owner !== signer?.address) {
-      throw new Error('HTTP Request is not signed by the owner of the Ownable');
+      throw new AuthError('HTTP Request is not signed by the owner of the Ownable');
     }
+
+    if (this.config.get('verify.integrity')) {
+      const { verified } = await this.ltoIndex.verifyAnchors(chain.anchorMap);
+      if (!verified) throw new UserError('Chain integrity could not be verified: Mismatch in anchor map');
+    }
+
+    const isLocked = await contract.query({ is_locked: {} });
+    if (!isLocked) throw new UserError('Ownable is not locked');
 
     const proof = this.config.get('accept.unlockNFT') ? await this.unlock(chain, info) : undefined;
 
@@ -129,5 +141,14 @@ export class OwnableService implements OnModuleInit {
     this.postToWebhook(chain, info, packageCid);
 
     return { ...info, proof };
+  }
+
+  async claim(chainId: string, signer: Account): Promise<Uint8Array> {
+    const zip = await this.packages.zipped(chainId);
+    const json = await fs.readFile(`${this.path}/${chainId}.json`, 'utf-8');
+
+    zip.file(`chain.json`, json);
+
+    return await zip.generateAsync({ type: 'uint8array' });
   }
 }

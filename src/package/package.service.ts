@@ -79,6 +79,11 @@ export class PackageService implements OnModuleInit {
     return filename ? `${this.path}/${cid}/${filename}` : `${this.path}/${cid}.zip`;
   }
 
+  async zipped(cid: string): Promise<JSZip> {
+    const data = await fs.readFile(this.file(cid), 'utf8');
+    return await this.zip.loadAsync(data, { createFolders: true });
+  }
+
   async hasMethod(cid: string, msgType: string, method: string): Promise<boolean> {
     const json = await fs.readFile(this.file(cid, `${msgType}_msg.json`), 'utf8');
     const schema = JSON.parse(json);
