@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiProduces } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { OwnableService } from './ownable.service';
 import { Account, EventChain } from '@ltonetwork/lto';
-import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { eventChainExample } from './examples';
-import { Signer } from '../common/signature/signer';
+import { Signer } from '../common/http-signature/signer';
 import { AuthError, UserError } from '../interfaces/error';
 
 @Controller('ownables')
@@ -12,7 +12,7 @@ export class OwnableController {
   constructor(private service: OwnableService) {}
 
   @Post('/')
-  @ApiConsumes('application/json')
+  @ApiConsumes('application/json', 'application/yaml')
   @ApiBody({
     schema: {
       type: 'object',
@@ -37,7 +37,7 @@ export class OwnableController {
   }
 
   @Get('/:id')
-  @ApiConsumes('application/json')
+  @ApiProduces('application/json')
   async claim(
     @Param('id') id,
     @Req() req: Request,
