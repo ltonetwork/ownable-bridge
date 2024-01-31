@@ -5,7 +5,7 @@ import { ConfigModule } from './common/config/config.module';
 import { PackageModule } from './package/package.module';
 import { OwnableModule } from './ownable/ownable.module';
 import { OwnableController } from './ownable/ownable.controller';
-import { VerifySignatureMiddleware } from './common/signature/verify-signature.middleware';
+import { VerifySignatureMiddleware } from './common/http-signature/verify-signature.middleware';
 
 @Module({
   imports: [ConfigModule, PackageModule, OwnableModule],
