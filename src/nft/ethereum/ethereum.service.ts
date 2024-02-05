@@ -12,4 +12,9 @@ export class EthereumService {
 
     return await this.ethers.signMessage(challenge);
   }
+
+  public async getIssuer(nft: NFTInfo): Promise<string> {
+    const nftContract = this.ethers.getContract('Ownable', nft.network, nft.address);
+    return await nftContract.owner();
+  }
 }

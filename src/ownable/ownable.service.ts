@@ -88,12 +88,21 @@ export class OwnableService implements OnModuleInit {
     return chain.id === expectedId;
   }
 
+  private async verifyChainOwner(chain: EventChain, nft: NFTInfo): Promise<boolean> {
+    const { publicKey, keyType } = chain.events[0].signKey as { publicKey: Binary; keyType: 'ed25519' | 'secp256k1' };
+    const account = this.lto.account({ publicKey: publicKey.base58, keyType });
+
+    const issuer = await this.nft.getIssuer(nft);
+
+    return issuer === account.getAddressOnNetwork(nft.network);
+  }
+
   private async unlock(chain: EventChain, info: OwnableInfo): Promise<string> {
     if (!info.nft) {
       throw new UserError('Ownable is not associated with an NFT');
     }
 
-    if (this.config.get('verify.chainId') && !this.verifyChainId(chain, info.nft)) {
+    if (this.config.get('verify.chainId')&& !(await this.verifyChainOwner(chain, info.nft)) && !this.verifyChainId(chain, info.nft) ) {
       throw new UserError('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
     }
 
@@ -146,6 +155,8 @@ export class OwnableService implements OnModuleInit {
   async claim(chainId: string, signer: Account): Promise<Uint8Array> {
     const zip = await this.packages.zipped(chainId);
     const json = await fs.readFile(`${this.path}/${chainId}.json`, 'utf-8');
+
+    // Is the signer the current owner of the Ownable? No, then return a 403
 
     zip.file(`chain.json`, json);
 
