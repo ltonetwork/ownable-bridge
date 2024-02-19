@@ -13,4 +13,12 @@ export class NFTService {
 
     throw new Error(`Unknown network ${nft.network}`);
   }
+
+  async getIssuer(nft: NFTInfo): Promise<string> {
+    if (nft.network.startsWith('eip155:')) {
+      return await this.ethereum.getIssuer(nft);
+    }
+
+    throw new Error(`Unknown network ${nft.network}`);
+  }
 }
