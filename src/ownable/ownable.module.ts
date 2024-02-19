@@ -11,7 +11,16 @@ import { OwnableService } from './ownable.service';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [ConfigModule, LtoModule, CosmWasmModule, PackageModule, EthersModule, NFTModule, LtoIndexModule, HttpModule],
+  imports: [
+    ConfigModule,
+    LtoModule,
+    CosmWasmModule,
+    PackageModule,
+    EthersModule,
+    NFTModule,
+    LtoIndexModule,
+    HttpModule,
+  ],
   providers: [OwnableService],
   controllers: [OwnableController],
 })

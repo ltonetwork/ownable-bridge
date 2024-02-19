@@ -17,6 +17,7 @@ Built with [NestJS](https://nestjs.com/).
 ```bash
 # development
 $ npm run start
+# Swagger => http://localhost:3000/api-docs
 
 # watch mode
 $ npm run start:dev
