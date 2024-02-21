@@ -152,11 +152,13 @@ export class OwnableService implements OnModuleInit {
     return { ...info, proof };
   }
 
-  async claim(chainId: string, signer: Account): Promise<Uint8Array> {
+  async isAllowedToClaim(chainId: string, signer: Account): Promise<boolean> {
+    return true;
+  }
+
+  async claim(chainId: string): Promise<Uint8Array> {
     const zip = await this.packages.zipped(chainId);
     const json = await fs.readFile(`${this.path}/${chainId}.json`, 'utf-8');
-
-    // Is the signer the current owner of the Ownable? No, then return a 403
 
     zip.file(`chain.json`, json);
 

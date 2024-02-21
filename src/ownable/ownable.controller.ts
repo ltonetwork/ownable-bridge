@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, Head, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiProduces } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { OwnableService } from './ownable.service';
@@ -49,7 +49,11 @@ export class OwnableController {
     }
 
     try {
-      const zip = await this.service.claim(id, signer);
+      if (!(await this.service.isAllowedToClaim(id, signer))) {
+        return res.status(403).send('Not allowed to claim');
+      }
+
+      const zip = await this.service.claim(id);
       return res.status(200).contentType('application/zip').send(zip);
     } catch (err) {
       return this.errorResponse(res, err);
@@ -72,12 +76,17 @@ export class OwnableController {
     }
 
     try {
-      const zip = await this.service.claim(id, signer);
+      if (!(await this.service.isAllowedToClaim(id, signer))) {
+        return res.status(403).send('Not allowed to claim');
+      }
+
+      const zip = await this.service.claim(id);
       return res.status(200).contentType('application/zip').send(zip);
     } catch (err) {
       return this.errorResponse(res, err);
     }
   }
+
   private errorResponse(res: Response, err: any) {
     if (err instanceof AuthError) return res.status(403).send(err.message);
     if (err instanceof UserError) return res.status(400).send(err.message);
