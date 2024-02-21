@@ -87,6 +87,32 @@ export class OwnableController {
     }
   }
 
+  @Head('/:network/:address/:nft_id')
+  async CheckByNft(
+    @Param('network') network,
+    @Param('address') address,
+    @Param('nft_id') nftId,
+    @Req() req: Request,
+    @Res() res: Response,
+    @Signer() signer?: Account,
+  ): Promise<Response> {
+    const id = await this.service.getIdByNft({ network, address, id: nftId });
+
+    if (!id) {
+      return res.status(404).send('Event chain not available on this bridge');
+    }
+
+    try {
+      if (!(await this.service.isAllowedToClaim(id, signer))) {
+        return res.status(403).send('Not allowed to claim');
+      }
+
+      return res.status(200).contentType('application/zip').send();
+    } catch (err) {
+      return this.errorResponse(res, err);
+    }
+  }
+
   private errorResponse(res: Response, err: any) {
     if (err instanceof AuthError) return res.status(403).send(err.message);
     if (err instanceof UserError) return res.status(400).send(err.message);
