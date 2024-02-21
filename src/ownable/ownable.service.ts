@@ -102,7 +102,11 @@ export class OwnableService implements OnModuleInit {
       throw new UserError('Ownable is not associated with an NFT');
     }
 
-    if (this.config.get('verify.chainId')&& !(await this.verifyChainOwner(chain, info.nft)) && !this.verifyChainId(chain, info.nft) ) {
+    if (
+      this.config.get('verify.chainId') &&
+      !(await this.verifyChainOwner(chain, info.nft)) &&
+      !this.verifyChainId(chain, info.nft)
+    ) {
       throw new UserError('Chain id mismatch: Unable to confirm the Ownable was forged for specified NFT');
     }
 
