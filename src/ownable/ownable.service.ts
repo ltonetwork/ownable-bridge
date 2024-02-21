@@ -162,4 +162,19 @@ export class OwnableService implements OnModuleInit {
 
     return await zip.generateAsync({ type: 'uint8array' });
   }
+
+  async getIdByNft(nft: NFTInfo): Promise<string | undefined> {
+    const files = await fs.readdir(this.path);
+
+    for (const file of files) {
+      const json = await fs.readFile(`${this.path}/${file}`, 'utf-8');
+      const chain = EventChain.from(JSON.parse(json));
+
+      if (this.verifyChainId(chain, nft)) {
+        return chain.id;
+      }
+    }
+
+    return undefined;
+  }
 }
