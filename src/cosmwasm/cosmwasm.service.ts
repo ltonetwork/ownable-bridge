@@ -31,7 +31,7 @@ export class CosmWasmService {
 
     vm.runInContext(code, sandbox);
 
-    const contract = new Contract(sandbox);
+    const contract: Contract = new Contract(sandbox);
     await contract.init(wasmBuffer);
 
     return contract;

@@ -33,8 +33,46 @@ export default {
       default: 'T',
       env: 'LTO_NETWORK_ID',
     },
+    account: {
+      seed: {
+        default: '',
+        env: 'LTO_ACCOUNT_SEED',
+      },
+    },
   },
   eth: {
+    account: {
+      mnemonic: {
+        default: '',
+        env: 'ACCOUNT_MNEMONIC',
+      },
+      arbitrum_alchemy_api_key: {
+        default: '',
+        env: 'ARBITRUM_ALCHEMY_API_KEY',
+      },
+      polygon_alchemy_api_key: {
+        default: '',
+        env: 'POLYGON_ALCHEMY_API_KEY',
+      },
+      eth_alchemy_api_key: {
+        default: '',
+        env: 'ETH_ALCHEMY_API_KEY',
+      },
+    },
+    contracts: {
+      ethereum: {
+        default: '',
+        env: 'ETHEREUM_NFT_CONTRACT_ADDR',
+      },
+      arbitrum: {
+        default: '',
+        env: 'ARBITRUM_NFT_CONTRACT_ADDR',
+      },
+      polygon: {
+        default: '',
+        env: 'POLYGON_NFT_CONTRACT_ADDR',
+      },
+    },
     providers: {
       etherscan: {
         default: '',
@@ -60,12 +98,20 @@ export default {
     networks: {
       default: [
         {
-          id: 5,
-          name: 'goerli',
-          provider: 'infura' as 'jsonrpc' | 'etherscan' | 'infura' | 'alchemy' | 'cloudflare' | 'pocket' | 'ankr',
+          id: 421614,
+          name: 'arbitrumSepolia',
+          provider: 'jsonrpc' as 'jsonrpc' | 'etherscan' | 'infura' | 'alchemy' | 'cloudflare' | 'pocket' | 'ankr',
           url: '',
         },
       ],
+      // default: [
+      //   {
+      //     id: 80001,
+      //     name: 'PolygonMumbai',
+      //     provider: 'alchemy' as 'jsonrpc' | 'etherscan' | 'infura' | 'alchemy' | 'cloudflare' | 'pocket' | 'ankr',
+      //     url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.POLYGON_MUMBAI_ALCHEMY_API_KEY}`,
+      //   },
+      // ],
       format: 'typed-array',
       children: {
         id: {
@@ -110,6 +156,14 @@ export default {
     chains: {
       default: 'storage/chains',
       env: 'CHAINS_PATH',
+    },
+    users: {
+      default: 'storage/users',
+      env: 'USERS_PATH',
+    },
+    nfts: {
+      default: 'storage/nfts',
+      env: 'NFTS_PATH',
     },
   },
   verify: {

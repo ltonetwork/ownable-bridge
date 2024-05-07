@@ -9,11 +9,12 @@ import { NFTModule } from '../nft/nft.module';
 import { LtoIndexModule } from '../common/lto-index/lto-index.module';
 import { OwnableService } from './ownable.service';
 import { HttpModule } from '@nestjs/axios';
-
+import { IpfsModule } from '../common/ipfs/ipfs.module';
 @Module({
   imports: [
     ConfigModule,
     LtoModule,
+    IpfsModule,
     CosmWasmModule,
     PackageModule,
     EthersModule,
